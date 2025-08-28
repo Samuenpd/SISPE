@@ -4,7 +4,6 @@ from tkinter import ttk
 import hashlib
 import sqlite3
 
-# essa é uma classe colocada em algum momento das versões, ela é usada na parte de registro para guardar e printar as informações do aluno
 class Aluno:
     def __init__(self, nome, sala, serie, gravidade, id=None, observacoes=''):
         self.nome = nome
@@ -16,16 +15,14 @@ class Aluno:
 
     def __str__(self):
         return f"Nome: {self.nome}, Sala: {self.sala}, Série: {self.serie}, Gravidade: {self.gravidade}"
-      
+    
     def to_dict(self):
         return {"nome": self.nome, "sala": self.sala, "serie": self.serie, "gravidade": self.gravidade}
-    # eu preciso explicar isso, o staticmethod cria uma def que não depende da classe
+    
     @staticmethod
     def from_dict(data):
         return Aluno(data['nome'], data['sala'], data['serie'], data['gravidade'])
 
-# isso é muito chat tá? tipo acho que eu n escrevi nem uma linha
-# bom agora eu escrevi algumas linhas, pq deu erro do nada ai eu precisei mexer em tudo
 class DatabaseManager:
     def __init__(self, db_name="sispe.db"):
         self.conn = sqlite3.connect(db_name)
@@ -33,11 +30,10 @@ class DatabaseManager:
         self.create_tables()
 
     def _hash_senha(self, senha):
-        """Método privado para gerar o hash da senha."""
         return hashlib.sha256(senha.encode()).hexdigest()
 
-    def add_user(self, username, password, user_type): # Modificado para receber a senha sem hash
-        password_hash = self._hash_senha(password) # Gera o hash aqui
+    def add_user(self, username, password, user_type):
+        password_hash = self._hash_senha(password)
         try:
             self.cursor.execute("INSERT INTO usuarios (username, password_hash, user_type) VALUES (?, ?, ?)", (username, password_hash, user_type))
             self.conn.commit()
@@ -46,7 +42,6 @@ class DatabaseManager:
             return False
         
     def create_tables(self):
-        """Cria as tabelas do banco de dados se elas não existirem."""
         self.cursor.execute('''
             CREATE TABLE IF NOT EXISTS usuarios (
                 username TEXT PRIMARY KEY,
@@ -92,7 +87,6 @@ class DatabaseManager:
             return Aluno(nome=data[1], sala=data[2], serie=data[3], gravidade=data[4], observacoes=data[5], id=data[0])
         return None
     
-    # eu criei uma parte pra salvar registor sobre os alunos
     def aluno_observação(self, aluno_id, observacao):
         self.cursor.execute(
             'UPDATE alunos SET observacoes = ? WHERE id = ?',
@@ -106,18 +100,15 @@ class DatabaseManager:
             (nome, sala, serie, gravidade, aluno_id)
         )
         self.conn.commit()
-    # acaba aqui
 
     def delete_aluno(self, aluno_id):
         self.cursor.execute("DELETE FROM alunos WHERE id = ?", (aluno_id,))
         self.conn.commit()
 
     def close(self):
-        # Fecha a conexão com o banco de dados
         self.conn.close()
 
     def delete_user(self, username):
-        # Exclui a conta do usuário
         self.cursor.execute("DELETE FROM usuarios WHERE username = ?", (username,))
         self.conn.commit()
 
@@ -128,12 +119,11 @@ class SISPE:
         principal.geometry("500x500")
         principal.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.frames = {} #essa é uma bliblioteca vazia para guardar as telas
-        self.usuario_logado = None # Adicionamos a variável para guardar o usuário logado
+        self.frames = {}
+        self.usuario_logado = None
         
-        # Inicializa o gerenciador do banco de dados
         self.db = DatabaseManager()
-        self.aluno_id_edicao = None # Nova variável para rastrear o aluno em edição
+        self.aluno_id_edicao = None
 
         self.criar_tela_login()
         self.criar_tela_gestao()
@@ -144,10 +134,9 @@ class SISPE:
 
         self.aluno_id_observacoes = None
 
-        self.mostrar_frame("login") #essa vai ser a primeira tela
+        self.mostrar_frame("login")
     
     def on_closing(self):
-        """Fecha a conexão com o banco de dados ao fechar a janela."""
         if messagebox.askokcancel("Sair", "Tem certeza que deseja sair?"):
             self.db.close()
             self.principal.destroy()
@@ -158,7 +147,7 @@ class SISPE:
     def criar_tela_login(self):
         frame_login = ttk.Frame(self.principal, padding="30 20 30 20", relief="groove")
         self.frames["login"] = frame_login
-        # eu mudei essa parte pra deixar redimensionavel os elementos na tela, isso vai se repetir em cada frame
+        
         frame_login.grid_rowconfigure(0, weight=1)
         frame_login.grid_rowconfigure(9, weight=1)
         frame_login.grid_columnconfigure(0, weight=1)
@@ -178,7 +167,6 @@ class SISPE:
         botao_login = ttk.Button(frame_login, text="Entrar", command=self.fazer_login)
         botao_login.grid(row=7, column=1, pady=23)
 
-    # ent essa nova def é pra criar novos tipos de perfil
     def criar_tela_gestao(self):
         frame_gestao = ttk.Frame(self.principal, padding ='50 30 50 30', relief='groove' )
         self.frames['gestao'] = frame_gestao
@@ -211,9 +199,8 @@ class SISPE:
             state='readonly'
         )
         self.combo_admin_user_type.grid(row=3, column=1, padx=10, pady=5, sticky="EW")
-        self.combo_admin_user_type.set('pai') # Valor padrão
+        self.combo_admin_user_type.set('pai')
 
-        # Botões de ação
         ttk.Button(central_frame, text="Criar Usuário", command=self.criar_usuario_admin).grid(row=4, column=0, columnspan=2, pady=10)
         ttk.Button(central_frame, text="Voltar", command=lambda: self.mostrar_frame("principal")).grid(row=5, column=0, columnspan=2, pady=5)
 
@@ -234,11 +221,9 @@ class SISPE:
             messagebox.showerror("Erro", "Nome de usuário já existe.")
 
     def configurar_interface_por_tipo(self):
-        # Esconde todos os botões que dependem do tipo de usuário
         self.botao_gerenciar_usuarios.pack_forget()
         self.botao_registrar.pack_forget()
 
-        # Mostra os botões com base no tipo de usuário
         if self.user_type in ( 'secretaria'):
             self.botao_gerenciar_usuarios.pack(pady=20)
             self.botao_registrar.pack(pady=20)
@@ -256,10 +241,8 @@ class SISPE:
         self.botao_perfil = ttk.Button(frame_principal, text='Perfil', command=self.ir_perfil)
         self.botao_logout = ttk.Button(frame_principal, text="Sair", command=self.fazer_logout)
 
-        # Apenas os botões de perfil e sair são visíveis por padrão, os outros são controlados
         self.botao_perfil.pack(pady=20)
         self.botao_logout.pack(pady=20)
-
 
     def criar_tela_registro(self):
         frame_registro = ttk.Frame(self.principal, padding="50 30 50 30", relief="groove")
@@ -270,15 +253,12 @@ class SISPE:
         frame_registro.grid_columnconfigure(0, weight=1)
         frame_registro.grid_columnconfigure(2, weight=1)
 
-        # Isso garante que tudo se mova junto
         central_frame = ttk.Frame(frame_registro)
         central_frame.grid(row=1, column=1, rowspan=8, sticky="nsew")
 
-        # Configura as colunas do central_frame para que os widgets se centralizem nele
         central_frame.grid_columnconfigure(0, weight=1)
         central_frame.grid_columnconfigure(1, weight=1)
         
-        # todos os widgets são colocados dentro do central_frame
         ttk.Label(central_frame, text='Registro de Aluno', font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=2, pady=5)
 
         ttk.Label(central_frame, text="Nome:").grid(row=1, column=0, padx=10, pady=5, sticky="W")
@@ -306,7 +286,6 @@ class SISPE:
         scrollbar = ttk.Scrollbar(list_frame, orient=tk.VERTICAL)
         scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-        # Substituindo o Listbox pelo Treeview
         self.tree_alunos = ttk.Treeview(list_frame, columns=("Nome", "Sala", "Série", "Gravidade"), show="headings")
         self.tree_alunos.heading("Nome", text="Nome")
         self.tree_alunos.heading("Sala", text="Sala")
@@ -323,7 +302,6 @@ class SISPE:
         
         scrollbar.config(command=self.tree_alunos.yview)
 
-        # Criei um novo frame para os botões de ação para melhor organização
         botoes_acao_frame = ttk.Frame(central_frame)
         botoes_acao_frame.grid(row=8, column=0, columnspan=2, pady=5)
         
@@ -342,7 +320,6 @@ class SISPE:
         central_frame2 = ttk.Frame(frame_perfil)
         central_frame2.grid(row=1, column=1, rowspan=8, sticky="nsew")
 
-        # Configura as colunas do central_frame para que os widgets se centralizem nele
         central_frame2.grid_columnconfigure(0, weight=1)
         central_frame2.grid_columnconfigure(1, weight=1)
 
@@ -353,8 +330,7 @@ class SISPE:
         ttk.Button(central_frame2, text="Excluir Conta", command=self.excluir_conta, style='Danger.TButton').grid(row=4, column=0, columnspan=2, pady=20)
 
         ttk.Button(central_frame2, text="Voltar", command=lambda: self.mostrar_frame("principal")).grid(row=6, column=0, columnspan=2, pady=5)
- 
-    # isso é pra criar uma tela dentro das informações de cada aluno
+
     def criar_tela_observacoes(self):
         frame_obs = ttk.Frame(self.principal, padding='30 20 30 20', relief='groove')
         self.frames['observacoes'] = frame_obs 
@@ -428,14 +404,13 @@ class SISPE:
         self.mostrar_frame("registro")
 
     def fazer_logout(self):
-        # Limpa o usuário logado ao sair para garantir que a próxima sessão comece do zero
         self.usuario_logado = None
         self.mostrar_frame("login")
 
     def abrir_tela_observacoes(self, event):
-        item_selecionado_id = self.tree_alunos.focus() 
+        item_selecionado_id = self.tree_alunos.focus()
         if not item_selecionado_id:
-            return 
+            return
 
         self.aluno_id_observacao = item_selecionado_id
         aluno = self.db.get_aluno_by_id(self.aluno_id_observacao)
@@ -449,7 +424,6 @@ class SISPE:
 
             self.mostrar_frame("observacoes")
 
-    # isso é pra funcionar quando clicar duas vezes :)
     def salvar_observacoes(self):
         if self.aluno_id_observacao is None:
             messagebox.showerror("Erro", "Nenhum aluno selecionado.")
@@ -472,12 +446,10 @@ class SISPE:
                 self.tree_alunos.insert("", "end", iid=aluno.id, values=(aluno.nome, aluno.sala, aluno.serie, aluno.gravidade))
 
     def salvar_aluno(self):
-    # Verifica se o usuário logado tem permissão para salvar
         if self.user_type not in ('psicologa', 'secretaria'):
             messagebox.showerror("Acesso Negado", "Você não tem permissão para registrar alunos.")
             return
     
-    # O restante da sua lógica de salvar aluno
         nome = self.entry_nome.get()
         sala = self.entry_sala.get()
         serie = self.entry_serie.get()
@@ -519,14 +491,12 @@ class SISPE:
         aluno_id = item_selecionado
         aluno_nome = self.tree_alunos.item(item_selecionado, "values")[0]
     
-        # Confirma a exclusão
         confirmar = messagebox.askyesno(
-            "Confirmar Exclusão", 
+            "Confirmar Exclusão",
             f"Tem certeza que deseja excluir o aluno '{aluno_nome}'?"
         )
     
         if confirmar:
-            # Chama a função do banco de dados com o ID do aluno
             self.db.delete_aluno(aluno_id)
             self.atualizar_exibicao()
             messagebox.showinfo("Exclusão", f"Aluno '{aluno_nome}' excluído com sucesso.")
@@ -538,7 +508,6 @@ class SISPE:
             messagebox.showerror("Edição", "Selecione um aluno para editar.")
             return
         
-        # Pega os dados do aluno no Treeview para pré-preencher o formulário
         aluno_id_para_editar = item_selecionado
         valores = self.tree_alunos.item(item_selecionado, "values")
 
@@ -552,20 +521,17 @@ class SISPE:
         self.entry_serie.insert(0, valores[2])
         self.gravidade_combo.set(valores[3])
 
-        # Armazena o ID do aluno a ser editado para o método salvar_aluno
         self.aluno_id_edicao = aluno_id_para_editar
 
     def atualizar_exibicao(self):
         self.tree_alunos.delete(*self.tree_alunos.get_children())
 
-        # Atualiza o Treeview com os dados mais recentes do banco de dados
         if self.usuario_logado:
             alunos_do_usuario = self.db.get_alunos_by_user(self.usuario_logado)
             for aluno in alunos_do_usuario:
                 self.tree_alunos.insert("", "end", iid=aluno.id, values=(aluno.nome, aluno.sala, aluno.serie, aluno.gravidade))
 
     def excluir_conta(self):
-    # 1. Pede confirmação para o usuário
         resposta = messagebox.askyesno(
             "Confirmação de Exclusão",
             "Tem certeza que deseja excluir sua conta? Esta ação é definitiva e removerá todos os seus dados."
@@ -573,28 +539,25 @@ class SISPE:
 
         if resposta:
             username = self.usuario_logado
-            self.db.delete_user(username) # ON DELETE CASCADE cuida dos alunos
+            self.db.delete_user(username)
             self.fazer_logout()
             messagebox.showinfo("Exclusão de Conta", "Sua conta foi excluída com sucesso.")
 
 if __name__ == "__main__":
     teste = tk.Tk()
     style = ttk.Style()
-    # tema
     style.theme_use('vista')
-    # estilo do botão
-    style.configure("Accent.TButton", font=("Arial", 12, "bold"), 
-                    foreground="White", background="#0d3057", 
+    style.configure("Accent.TButton", font=("Arial", 12, "bold"),
+                    foreground="White", background="#0d3057",
                     padding=10, borderwidth=0, relief="flat")
     style.map("Accent.TButton", background=[('active', '#0056b3')])
     
-    style.configure("Danger.TButton", font=("Arial", 12, "bold"), 
-                    foreground="red", background="#0d3057", 
+    style.configure("Danger.TButton", font=("Arial", 12, "bold"),
+                    foreground="red", background="#0d3057",
                     padding=5, borderwidth=0, relief="solid", fieldbackground='white', bordercolor="#0d3057",
                     focuscolor="#0d3057")
     style.map("Danger.TButton", background=[('active', '#a30000')], foreground=[('active', '#ff3333')])
-    # estilo de entrada (a parte onde escreve)
-    style.configure("TEntry", padding=5, font=("Arial", 12), fieldbackground="white", 
+    style.configure("TEntry", padding=5, font=("Arial", 12), fieldbackground="white",
                     foreground="#333333", borderwidth=1, relief="solid")
 
     style.configure("TLabel", foreground= "#3A0D0D")
