@@ -170,25 +170,51 @@ class SISPE:
         principal.geometry("900x600")
         principal.protocol("WM_DELETE_WINDOW", self.on_closing)
 
-        self.frames = {} #essa é uma bliblioteca vazia para guardar as telas
-        self.usuario_logado = None # Adicionamos a variável para guardar o usuário logado
-        
-        # Inicializa o gerenciador do banco de dados
+        self.frames = {}
+        self.usuario_logado = None
         self.db = DatabaseManager()
-        self.aluno_id_edicao = None # Nova variável para rastrear o aluno em edição
-
-        self.criar_tela_login()
-        self.criar_tela_gestao()
-        self.criar_tela_principal()
-        self.criar_tela_registro()
-        self.criar_tela_perfil()
-        self.criar_tela_observacoes()
-        self.criar_tela_vinculo()
-        self.criar_tela_ver_alunos()
-
+        self.aluno_id_edicao = None
         self.aluno_id_observacoes = None
 
-        self.mostrar_frame("login") #essa vai ser a primeira tela
+        # 🔹 cria só login e principal aqui
+        self.criar_tela_login()
+        self.criar_tela_principal()
+
+        # 🔹 as outras telas só serão criadas quando o usuário logar
+        # (porque precisam do conteudo_frame já existente)
+
+        self.mostrar_frame("login")
+
+    def fazer_login(self):
+        usuario = self.campo_usuario_login.get()
+        senha = self.campo_senha_login.get()
+
+        senha_hash = self.db._hash_senha(senha)
+        result = self.db.get_user(usuario)
+
+        if result and senha_hash == result[0]:
+            self.usuario_logado = usuario
+            self.user_type = result[1]
+
+            self.campo_usuario_login.delete(0, tk.END)
+            self.campo_senha_login.delete(0, tk.END)
+            self.label_bem_vindo.config(text=f"Bem-vindo, {self.usuario_logado}!")
+
+            self.configurar_interface_por_tipo()
+
+            # 🔹 cria as telas internas agora que conteudo_frame já existe
+            if "gestao" not in self.frames:
+                self.criar_tela_gestao()
+                self.criar_tela_registro()
+                self.criar_tela_perfil()
+                self.criar_tela_observacoes()
+                self.criar_tela_vinculo()
+                self.criar_tela_ver_alunos()
+
+            self.mostrar_frame("principal")
+        else:
+            messagebox.showerror("Login", "Usuário ou senha incorretos.")
+
     
     def on_closing(self):
         """Fecha a conexão com o banco de dados ao fechar a janela."""
@@ -222,44 +248,6 @@ class SISPE:
         botao_login = ttk.Button(frame_login, text="Entrar", command=self.fazer_login)
         botao_login.grid(row=7, column=1, pady=23)
 
-    # ent essa nova def é pra criar novos tipos de perfil
-    def criar_tela_gestao(self):
-        frame_gestao = ttk.Frame(self.principal, padding ='50 30 50 30', relief='groove' )
-        self.frames['gestao'] = frame_gestao
-
-        frame_gestao.grid_rowconfigure(0, weight=1)
-        frame_gestao.grid_rowconfigure(9, weight=1)
-        frame_gestao.grid_columnconfigure(0, weight=1)
-        frame_gestao.grid_columnconfigure(2, weight=1)
-
-        central_frame = ttk.Frame(frame_gestao)
-        central_frame.grid(row=1, column=1, rowspan=8, sticky="nsew")
-
-        central_frame.grid_columnconfigure(0, weight=1)
-        central_frame.grid_columnconfigure(1, weight=1)
-
-        ttk.Label(central_frame, text='cadastro de usuários',font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
-
-        ttk.Label(central_frame, text ='Nome do Usuário:').grid(row=1, column=0, padx=10, pady=5, sticky="W")
-        self.campo_admin_novo_usuario = ttk.Entry(central_frame)
-        self.campo_admin_novo_usuario.grid(row=1, column=1, padx=10, pady=5, sticky="EW")
-
-        ttk.Label(central_frame, text="Senha:").grid(row=2, column=0, padx=10, pady=5, sticky="W")
-        self.campo_admin_nova_senha = ttk.Entry(central_frame, show="*")
-        self.campo_admin_nova_senha.grid(row=2, column=1, padx=10, pady=5, sticky="EW")
-
-        ttk.Label(central_frame, text="Tipo de Usuário:").grid(row=3, column=0, padx=10, pady=5, sticky="W")
-        self.combo_admin_user_type = ttk.Combobox(
-            central_frame,
-            values=['psicologa', 'secretaria', 'pai'],
-            state='readonly'
-        )
-        self.combo_admin_user_type.grid(row=3, column=1, padx=10, pady=5, sticky="EW")
-        self.combo_admin_user_type.set('pai') # Valor padrão
-
-        # Botões de ação
-        ttk.Button(central_frame, text="Criar Usuário", command=self.criar_usuario_admin).grid(row=4, column=0, columnspan=2, pady=10)
-        ttk.Button(central_frame, text="Voltar", command=lambda: self.mostrar_frame("principal")).grid(row=5, column=0, columnspan=2, pady=5)
 
     def criar_usuario_admin(self):
         novo_usuario = self.campo_admin_novo_usuario.get()
@@ -296,27 +284,80 @@ class SISPE:
             self.botao_ver_alunos.pack(pady=20)
 
     def criar_tela_principal(self):
-        frame_principal = ttk.Frame(self.principal, padding="50 30 50 30", relief="groove")
+        frame_principal = ttk.Frame(self.principal)
         self.frames["principal"] = frame_principal
-        self.label_bem_vindo = ttk.Label(frame_principal, text="", font=("Arial", 14))
+
+        self.menu_frame = tk.Frame(frame_principal, width=200, bg="#2c3e50")
+        self.menu_frame.pack(side="left", fill="y")
+
+        self.botao_gerenciar_usuarios = ttk.Button(
+            self.menu_frame, text='Gerenciar Usuários',
+            command=lambda: self.mostrar_frame("gestao")
+        )
+        self.botao_registrar = ttk.Button(
+            self.menu_frame, text='Registrar aluno',
+            command=self.ir_registro
+        )
+        self.botao_vinculo = ttk.Button(
+            self.menu_frame, text="Vincular Pai ↔ Aluno",
+            command=lambda: self.mostrar_frame("vinculo")
+        )
+        self.botao_ver_alunos = ttk.Button(
+            self.menu_frame, text="Meus Filhos",
+            command=lambda: [self.atualizar_alunos_pai(), self.mostrar_frame("ver_alunos")]
+        )
+
+        ttk.Button(self.menu_frame, text="Perfil", command=self.ir_perfil).pack(pady=10, fill="x")
+        ttk.Button(self.menu_frame, text="Sair", command=self.fazer_logout).pack(pady=20, fill="x")
+
+        self.conteudo_frame = tk.Frame(frame_principal, bg="white")
+        self.conteudo_frame.pack(side="right", expand=True, fill="both")
+
+        self.label_bem_vindo = ttk.Label(self.conteudo_frame, text="", font=("Arial", 14))
         self.label_bem_vindo.pack(pady=10)
 
-        ttk.Label(frame_principal, text="tela principal").pack(pady=10)
+    def criar_tela_gestao(self):
+        frame_gestao = ttk.Frame(self.conteudo_frame, padding ='50 30 50 30', relief='groove' )
+        self.frames['gestao'] = frame_gestao
 
-        self.botao_gerenciar_usuarios = ttk.Button(frame_principal, text='Gerenciar Usuários', command=lambda: self.mostrar_frame("gestao"))
-        self.botao_registrar = ttk.Button(frame_principal, text='Registrar aluno', command=self.ir_registro)
-        self.botao_perfil = ttk.Button(frame_principal, text='Perfil', command=self.ir_perfil)
-        self.botao_logout = ttk.Button(frame_principal, text="Sair", command=self.fazer_logout)
+        frame_gestao.grid_rowconfigure(0, weight=1)
+        frame_gestao.grid_rowconfigure(9, weight=1)
+        frame_gestao.grid_columnconfigure(0, weight=1)
+        frame_gestao.grid_columnconfigure(2, weight=1)
 
-        self.botao_vinculo = ttk.Button(frame_principal, text="Vincular Pai ↔ Aluno", command=lambda: self.mostrar_frame("vinculo"))
-        self.botao_ver_alunos = ttk.Button(self.frames["principal"], text="Meus Filhos", command=lambda: [self.atualizar_alunos_pai(), self.mostrar_frame("ver_alunos")])
+        central_frame = ttk.Frame(frame_gestao)
+        central_frame.grid(row=1, column=1, rowspan=8, sticky="nsew")
 
-        # Apenas os botões de perfil e sair são visíveis por padrão, os outros são controlados
-        self.botao_perfil.pack(pady=20)
-        self.botao_logout.pack(pady=20)
+        central_frame.grid_columnconfigure(0, weight=1)
+        central_frame.grid_columnconfigure(1, weight=1)
+
+        ttk.Label(central_frame, text='cadastro de usuários',font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=2, pady=10)
+
+        ttk.Label(central_frame, text ='Nome do Usuário:').grid(row=1, column=0, padx=10, pady=5, sticky="W")
+        self.campo_admin_novo_usuario = ttk.Entry(central_frame)
+        self.campo_admin_novo_usuario.grid(row=1, column=1, padx=10, pady=5, sticky="EW")
+
+        ttk.Label(central_frame, text="Senha:").grid(row=2, column=0, padx=10, pady=5, sticky="W")
+        self.campo_admin_nova_senha = ttk.Entry(central_frame, show="*")
+        self.campo_admin_nova_senha.grid(row=2, column=1, padx=10, pady=5, sticky="EW")
+
+        ttk.Label(central_frame, text="Tipo de Usuário:").grid(row=3, column=0, padx=10, pady=5, sticky="W")
+        self.combo_admin_user_type = ttk.Combobox(
+            central_frame,
+            values=['psicologa', 'secretaria', 'pai'],
+            state='readonly'
+        )
+        self.combo_admin_user_type.grid(row=3, column=1, padx=10, pady=5, sticky="EW")
+        self.combo_admin_user_type.set('pai') # Valor padrão
+
+        # Botões de ação
+        ttk.Button(central_frame, text="Criar Usuário", command=self.criar_usuario_admin).grid(row=4, column=0, columnspan=2, pady=10)
+        ttk.Button(central_frame, text="Voltar", command=lambda: self.mostrar_frame("principal")).grid(row=5, column=0, columnspan=2, pady=5)
+
+
 
     def criar_tela_registro(self):
-        frame_registro = ttk.Frame(self.principal, padding="50 30 50 30", relief="groove")
+        frame_registro = ttk.Frame(self.conteudo_frame, padding="50 30 50 30", relief="groove")
         self.frames["registro"] = frame_registro
 
         frame_registro.grid_rowconfigure(0, weight=1)
@@ -385,7 +426,7 @@ class SISPE:
         ttk.Button(botoes_acao_frame, text='excluir', command=self.excluir_aluno).pack(side='left', padx=5)
 
     def criar_tela_perfil(self):
-        frame_perfil = ttk.Frame(self.principal, padding="50 30 50 30", relief="groove")
+        frame_perfil = ttk.Frame(self.conteudo_frame, padding="50 30 50 30", relief="groove")
         self.frames["perfil"] = frame_perfil
 
         frame_perfil.grid_rowconfigure(0, weight=1)
@@ -410,7 +451,7 @@ class SISPE:
  
     # isso é pra criar uma tela dentro das informações de cada aluno
     def criar_tela_observacoes(self):
-        frame_obs = ttk.Frame(self.principal, padding='30 20 30 20', relief='groove')
+        frame_obs = ttk.Frame(self.conteudo_frame, padding='30 20 30 20', relief='groove')
         self.frames['observacoes'] = frame_obs 
 
         frame_obs.grid_rowconfigure(0, weight=1)
@@ -446,7 +487,7 @@ class SISPE:
         ttk.Button(botoes_frame, text="Voltar", command=lambda: self.mostrar_frame("registro")).pack(side="left", padx=10)
 
     def criar_tela_vinculo(self):
-        frame_vinculo = ttk.Frame(self.principal, padding="20 20 20 20", relief="groove")
+        frame_vinculo = ttk.Frame(self.conteudo_frame, padding="20 20 20 20", relief="groove")
         self.frames["vinculo"] = frame_vinculo
 
         ttk.Label(frame_vinculo, text="Vincular Pai a Aluno", font=("Arial", 16, "bold")).pack(pady=10)
@@ -477,7 +518,7 @@ class SISPE:
         ttk.Button(frame_vinculo, text="Voltar", command=lambda:self.mostrar_frame('principal')).pack(pady=10, padx=10)
 
     def criar_tela_ver_alunos(self):
-        frame_ver_alunos = ttk.Frame(self.principal, padding="20 20 20 20", relief="groove")
+        frame_ver_alunos = ttk.Frame(self.conteudo_frame, padding="20 20 20 20", relief="groove")
         self.frames["ver_alunos"] = frame_ver_alunos
 
         ttk.Label(frame_ver_alunos, text="Meus Filhos", font=("Arial", 16, "bold")).pack(pady=10)
@@ -502,32 +543,24 @@ class SISPE:
     def mostrar_frame(self, nome_do_frame):
         if nome_do_frame == "registro":
             self.atualizar_exibicao()
-            
-        for frame in self.frames.values():
+    
+        if nome_do_frame == "login":
+            for frame in self.frames.values():
+                frame.pack_forget()
+            self.frames["login"].pack(fill="both", expand=True)
+            return
+
+        if nome_do_frame == "principal":
+            for frame in self.frames.values():
+                frame.pack_forget()
+            self.frames["principal"].pack(fill="both", expand=True)
+            return
+
+        for frame in self.conteudo_frame.winfo_children():
             frame.pack_forget()
 
         frame = self.frames[nome_do_frame]
         frame.pack(fill="both", expand=True)
-
-    def fazer_login(self):
-        usuario = self.campo_usuario_login.get()
-        senha = self.campo_senha_login.get()
-
-        senha_hash = self.db._hash_senha(senha)
-        result = self.db.get_user(usuario)
-
-        if result and senha_hash == result[0]:
-            self.usuario_logado = usuario
-            self.user_type = result[1]
-            
-            self.campo_usuario_login.delete(0, tk.END)
-            self.campo_senha_login.delete(0, tk.END)
-            self.label_bem_vindo.config(text=f"Bem-vindo, {self.usuario_logado}!")
-            
-            self.configurar_interface_por_tipo()
-            self.mostrar_frame("principal")
-        else:
-            messagebox.showerror("Login", "Usuário ou senha incorretos.")
 
     def ir_perfil(self):
         self.mostrar_frame('perfil')
