@@ -274,21 +274,21 @@ class SISPE:
 
         # Mostra os botões com base no tipo de usuário
         if self.user_type in ('secretaria'):
-            self.botao_gerenciar_usuarios.pack(pady=20)
-            self.botao_vinculo.pack(pady=20)
+           self.botao_gerenciar_usuarios.pack(padx=10, side=tk.LEFT)
+           self.botao_vinculo.pack(padx=10, side=tk.LEFT)
         
         elif self.user_type in ('psicologa'):
-            self.botao_registrar.pack(pady=20)
+            self.botao_registrar.pack(padx=20, side=tk.LEFT)
 
         elif self.user_type == 'pai':
-            self.botao_ver_alunos.pack(pady=20)
+            self.botao_ver_alunos.pack(padx=20, side=tk.LEFT)
 
     def criar_tela_principal(self):
         frame_principal = ttk.Frame(self.principal)
         self.frames["principal"] = frame_principal
 
-        self.menu_frame = tk.Frame(frame_principal, width=200, bg="#2c3e50")
-        self.menu_frame.pack(side="left", fill="y")
+        self.menu_frame = tk.Frame(frame_principal,bg="#2c3e50")
+        self.menu_frame.pack(side="top", fill="x")
 
         self.botao_gerenciar_usuarios = ttk.Button(
             self.menu_frame, text='Gerenciar Usuários',
@@ -307,8 +307,8 @@ class SISPE:
             command=lambda: [self.atualizar_alunos_pai(), self.mostrar_frame("ver_alunos")]
         )
 
-        ttk.Button(self.menu_frame, text="Perfil", command=self.ir_perfil).pack(pady=10, fill="x")
-        ttk.Button(self.menu_frame, text="Sair", command=self.fazer_logout).pack(pady=20, fill="x")
+        ttk.Button(self.menu_frame, text="Perfil", command=self.ir_perfil).pack(padx = 20,side=tk.LEFT)
+        ttk.Button(self.menu_frame, text="Sair", command=self.fazer_logout).pack(padx=20,side=tk.RIGHT)
 
         self.conteudo_frame = tk.Frame(frame_principal, bg="white")
         self.conteudo_frame.pack(side="right", expand=True, fill="both")
