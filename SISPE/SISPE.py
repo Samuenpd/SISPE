@@ -179,6 +179,7 @@ class SISPE:
         # 🔹 cria só login e principal aqui
         self.criar_tela_login()
         self.criar_tela_principal()
+        self.criar_tela_registro()
 
         # 🔹 as outras telas só serão criadas quando o usuário logar
         # (porque precisam do conteudo_frame já existente)
@@ -198,11 +199,9 @@ class SISPE:
 
             self.campo_usuario_login.delete(0, tk.END)
             self.campo_senha_login.delete(0, tk.END)
-            self.label_bem_vindo.config(text=f"Bem-vindo, {self.usuario_logado}!")
 
             self.configurar_interface_por_tipo()
 
-            # 🔹 cria as telas internas agora que conteudo_frame já existe
             if "gestao" not in self.frames:
                 self.criar_tela_gestao()
                 self.criar_tela_registro()
@@ -287,8 +286,15 @@ class SISPE:
         frame_principal = ttk.Frame(self.principal)
         self.frames["principal"] = frame_principal
 
-        self.menu_frame = tk.Frame(frame_principal,bg="#2c3e50")
+        self.menu_frame = tk.Frame(frame_principal,bg="#e3c097")
         self.menu_frame.pack(side="top", fill="x")
+
+        ttk.Label(self.menu_frame, text="SISPE", font=("Arial", 20, "bold"), style="azul.TLabel").pack(side="left", padx=40)
+
+        self.botao_inicio = ttk.Button(
+            self.menu_frame, text= "início",
+            command=lambda: self.mostrar_frame("principal")
+        ).pack(padx = 20,side=tk.LEFT)
 
         self.botao_gerenciar_usuarios = ttk.Button(
             self.menu_frame, text='Gerenciar Usuários',
@@ -568,6 +574,7 @@ class SISPE:
     def ir_registro(self):
         self.mostrar_frame("registro")
 
+
     def fazer_logout(self):
         # Limpa o usuário logado ao sair para garantir que a próxima sessão comece do zero
         self.usuario_logado = None
@@ -803,6 +810,7 @@ if __name__ == "__main__":
                     foreground="#333333", borderwidth=1, relief="solid")
 
     style.configure("TLabel", foreground= "#3A0D0D")
+    style.configure("azul.TLabel", foreground="#2c3e50", background="#e3c097")
 
     app = SISPE(teste)
     teste.mainloop()
