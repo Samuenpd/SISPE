@@ -144,7 +144,6 @@ class DatabaseManager:
         self.cursor.execute("SELECT username FROM usuarios WHERE user_type = 'psicologa'")
         return [row[0] for row in self.cursor.fetchall()]
 
-# --- CLASSE PRINCIPAL DA APLICAÇÃO ---
 class SISPE:
     def __init__(self, principal):
         self.principal = principal
@@ -162,6 +161,25 @@ class SISPE:
         self.criar_tela_principal()
 
         self.mostrar_frame("login")
+
+    def aplicar_efeito_hover(self, botao, escala=1.1,cor_hover="#2563EB"):
+        fonte_original = botao.cget("font")  # Isso é um objeto CTkFont
+        tamanho_original = fonte_original.cget("size")
+        raio_original = botao.cget("corner_radius")
+        cor_original = botao.cget("text_color")
+
+        def ao_entrar(_):
+            nova_fonte = ctk.CTkFont(family=fonte_original.cget("family"),
+                                     size=int(tamanho_original * escala),
+                                     weight=fonte_original.cget("weight"))
+            botao.configure(font=nova_fonte, corner_radius=int(raio_original * escala),
+            text_color= cor_hover)
+
+        def ao_sair(_):
+            botao.configure(font=fonte_original, corner_radius=raio_original, text_color= cor_original)
+
+        botao.bind("<Enter>", ao_entrar)
+        botao.bind("<Leave>", ao_sair)
 
     def fazer_login(self):
         usuario = self.campo_usuario_login.get()
@@ -227,6 +245,18 @@ class SISPE:
         self.campo_senha_login = ctk.CTkEntry(self.card_login, placeholder_text="Senha", fg_color="white", text_color="black", show="*")
         self.campo_senha_login.pack(pady=10, padx=40, fill="x")
 
+        self.mostrar_senha = False  # Estado inicial: senha oculta
+        self.botao_mostrar_senha = ctk.CTkButton(
+            self.card_login,
+            text="👁",
+            width=30,
+            height=30,
+            text_color="black",
+            fg_color="transparent",
+            command=self.alternar_visibilidade_senha
+        )
+        self.botao_mostrar_senha.place(relx=0.9, rely=0.44, anchor="center")
+
     # Botão Login (verde escuro)
         self.botao_login = ctk.CTkButton(
             self.card_login,
@@ -238,10 +268,22 @@ class SISPE:
         )
         self.botao_login.pack(pady=25)
 
+    def alternar_visibilidade_senha(self):
+        if self.mostrar_senha:
+            self.campo_senha_login.configure(show="*")
+            self.botao_mostrar_senha.configure(text="👁")  # Ícone de olho fechado
+        else:
+            self.campo_senha_login.configure(show="")
+            self.botao_mostrar_senha.configure(text="🙈")  # Ícone de olho aberto
+        self.mostrar_senha = not self.mostrar_senha
+
     def criar_usuario_admin(self):
         novo_usuario = self.campo_admin_novo_usuario.get()
         nova_senha = self.campo_admin_nova_senha.get()
         user_type = self.combo_admin_user_type.get()
+
+        if user_type == "responsável":
+            user_type = "pai"
 
         if not all([novo_usuario, nova_senha, user_type]):
             messagebox.showerror("Erro", "Preencha todos os campos.")
@@ -274,26 +316,85 @@ class SISPE:
     def criar_tela_principal(self):
         frame_principal = ctk.CTkFrame(self.principal)
         self.frames["principal"] = frame_principal
-        frame_principal.pack(fill="both", expand=True) # Adicionado para garantir visibilidade
+        frame_principal.pack(fill="both", expand=True)
 
-        # O menu agora é um CTkFrame
-        self.menu_frame = ctk.CTkFrame(frame_principal, fg_color="#2c3e50", corner_radius=0)
+        # Menu superior
+        self.menu_frame = ctk.CTkFrame(frame_principal, fg_color="#1E3A8A", corner_radius=0)
         self.menu_frame.pack(side="top", fill="x")
 
-        self.botao_gerenciar_usuarios = ctk.CTkButton(self.menu_frame, text='Gerenciar Usuários', fg_color= "transparent", hover=False, command=lambda: self.mostrar_frame("gestao"))
-        self.botao_registrar = ctk.CTkButton(self.menu_frame, text='Registrar Aluno', fg_color= "transparent", hover=False, command=self.ir_registro)
-        self.botao_vinculo = ctk.CTkButton(self.menu_frame, text="Vincular Pai ↔ Aluno", fg_color= "transparent", hover=False, command=lambda: self.mostrar_frame("vinculo"))
-        self.botao_ver_alunos = ctk.CTkButton(self.menu_frame, text="Meus Filhos", fg_color= "transparent", hover=False, command=lambda: [self.atualizar_alunos_pai(), self.mostrar_frame("ver_alunos")])
+        # === BOTÕES DO MENU ===
+        self.botao_inicio = ctk.CTkButton(
+            self.menu_frame, text='Início',
+            fg_color="transparent", hover=False,
+            command=lambda: self.mostrar_frame("principal"),
+            width=100, height=35
+        )
+        self.botao_inicio.pack(padx=10, pady=10, side=ctk.LEFT)
+        self.aplicar_efeito_hover(self.botao_inicio)
 
-        ctk.CTkButton(self.menu_frame, text="Perfil", command=self.ir_perfil, fg_color= "transparent", hover=False, width=100).pack(padx=10, pady=10, side=ctk.LEFT)
-        ctk.CTkButton(self.menu_frame, text="Sair", command=self.fazer_logout, fg_color= "transparent", hover=False, width=100).pack(padx=10, pady=10, side=ctk.RIGHT)
+        self.botao_gerenciar_usuarios = ctk.CTkButton(
+            self.menu_frame, text='Gerenciar Usuários',
+            fg_color="transparent", hover=False,
+            command=lambda: self.mostrar_frame("gestao"),
+            width=150, height=35
+        )
+        self.botao_gerenciar_usuarios.pack(padx=10, pady=10, side=ctk.LEFT)
+        self.aplicar_efeito_hover(self.botao_gerenciar_usuarios)
 
+        self.botao_registrar = ctk.CTkButton(
+            self.menu_frame, text='Registrar Aluno',
+            fg_color="transparent", hover=False,
+            command=self.ir_registro,
+            width=130, height=35
+        )
+        self.botao_registrar.pack(padx=10, pady=10, side=ctk.LEFT)
+        self.aplicar_efeito_hover(self.botao_registrar)
+
+        self.botao_vinculo = ctk.CTkButton(
+            self.menu_frame, text="Vincular Responsável ↔ Aluno",
+            fg_color="transparent", hover=False,
+            command=lambda: self.mostrar_frame("vinculo"),
+            width=160, height=35
+        )
+        self.botao_vinculo.pack(padx=10, pady=10, side=ctk.LEFT)
+        self.aplicar_efeito_hover(self.botao_vinculo)
+
+        self.botao_ver_alunos = ctk.CTkButton(
+            self.menu_frame, text="Meus Filhos",
+            fg_color="transparent", hover=False,
+            command=lambda: [self.atualizar_alunos_pai(), self.mostrar_frame("ver_alunos")],
+            width=120, height=35
+        )
+        self.botao_ver_alunos.pack(padx=10, pady=10, side=ctk.LEFT)
+        self.aplicar_efeito_hover(self.botao_ver_alunos)
+
+        # Botão Perfil
+        self.botao_perfil = ctk.CTkButton(
+            self.menu_frame, text="Perfil",
+            command=self.ir_perfil,
+            fg_color="transparent", hover=False,
+            width=100, height=35
+        )
+        self.botao_perfil.pack(padx=10, pady=10, side=ctk.LEFT)
+        self.aplicar_efeito_hover(self.botao_perfil)
+
+        # Botão Sair
+        self.botao_sair = ctk.CTkButton(
+            self.menu_frame, text="Sair",
+            command=self.fazer_logout,
+            fg_color="transparent", hover=False,
+            width=100, height=35
+        )
+        self.botao_sair.pack(padx=10, pady=10, side=ctk.RIGHT)
+        self.aplicar_efeito_hover(self.botao_sair, cor_hover= "#FF0000")
+
+        # Área de conteúdo
         self.conteudo_frame = ctk.CTkFrame(frame_principal, fg_color="transparent")
         self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=10, pady=10)
 
         self.label_bem_vindo = ctk.CTkLabel(self.conteudo_frame, text="", font=("Arial", 20))
         self.label_bem_vindo.pack(pady=20)
-    
+
     def _configurar_estilo_treeview(self):
         style = ttk.Style()
         
@@ -333,26 +434,43 @@ class SISPE:
         style.map("Treeview.Heading", background=[('active', selected_color)])
 
     def criar_tela_gestao(self):
+        # Fundo da tela
         frame_gestao = ctk.CTkFrame(self.conteudo_frame)
         self.frames['gestao'] = frame_gestao
-        frame_gestao.pack(expand=True)
+        frame_gestao.pack(fill="both", expand=True)
 
-        ctk.CTkLabel(frame_gestao, text='Cadastro de Usuários', font=("Arial", 18, "bold")).grid(row=0, column=0, columnspan=2, padx=20, pady=20)
+        # "Card" central
+        card = ctk.CTkFrame(frame_gestao, fg_color="#F5F5DC", corner_radius=15)
+        card.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.4, relheight=0.55)
 
-        ctk.CTkLabel(frame_gestao, text='Nome do Usuário:').grid(row=1, column=0, padx=10, pady=10, sticky="w")
-        self.campo_admin_novo_usuario = ctk.CTkEntry(frame_gestao)
-        self.campo_admin_novo_usuario.grid(row=1, column=1, padx=10, pady=10)
+        # Título
+        ctk.CTkLabel(card, text='Cadastro de Usuários', font=("Arial", 20, "bold"), text_color="#1E3A8A").pack(pady=(25, 15))
 
-        ctk.CTkLabel(frame_gestao, text="Senha:").grid(row=2, column=0, padx=10, pady=10, sticky="w")
-        self.campo_admin_nova_senha = ctk.CTkEntry(frame_gestao, show="*")
-        self.campo_admin_nova_senha.grid(row=2, column=1, padx=10, pady=10)
+        # Campo: Nome do Usuário
+        ctk.CTkLabel(card, text='Nome do Usuário:', anchor="w", text_color="black").pack(padx=30, fill="x")
+        self.campo_admin_novo_usuario = ctk.CTkEntry(card, fg_color="white", text_color="black")
+        self.campo_admin_novo_usuario.pack(padx=30, pady=8, fill="x")
 
-        ctk.CTkLabel(frame_gestao, text="Tipo de Usuário:").grid(row=3, column=0, padx=10, pady=10, sticky="w")
-        self.combo_admin_user_type = ctk.CTkComboBox(frame_gestao, values=['psicologa', 'secretaria', 'pai'], state='readonly')
-        self.combo_admin_user_type.grid(row=3, column=1, padx=10, pady=10)
-        self.combo_admin_user_type.set('pai')
+        # Campo: Senha
+        ctk.CTkLabel(card, text='Senha:', anchor="w", text_color="black").pack(padx=30, fill="x")
+        self.campo_admin_nova_senha = ctk.CTkEntry(card, show="*", fg_color="white", text_color="black")
+        self.campo_admin_nova_senha.pack(padx=30, pady=8, fill="x")
 
-        ctk.CTkButton(frame_gestao, text="Criar Usuário", command=self.criar_usuario_admin).grid(row=4, column=0, columnspan=2, padx=20, pady=20)
+        # Campo: Tipo de Usuário
+        ctk.CTkLabel(card, text="Tipo de Usuário:", anchor="w", text_color="black").pack(padx=30, fill="x")
+        self.combo_admin_user_type = ctk.CTkComboBox(card, values=['psicologa', 'secretaria', 'responsável'], state='readonly')
+        self.combo_admin_user_type.pack(padx=30, pady=8, fill="x")
+        self.combo_admin_user_type.set('responsável')
+
+        # Botão Criar Usuário
+        ctk.CTkButton(
+            card,
+            text="Criar Usuário",
+            command=self.criar_usuario_admin,
+            fg_color="#2563EB",
+            hover_color="#1E40AF",
+            corner_radius=20
+        ).pack(pady=25)
 
     def criar_tela_registro(self):
         self._configurar_estilo_treeview()
@@ -451,7 +569,7 @@ class SISPE:
         self.frames["vinculo"] = frame_vinculo
         frame_vinculo.pack(fill="both", expand=True, padx=20, pady=20)
         
-        ctk.CTkLabel(frame_vinculo, text="Vincular Pai a Aluno", font=("Arial", 16, "bold")).pack(pady=10)
+        ctk.CTkLabel(frame_vinculo, text="Vincular Responsável a Aluno", font=("Arial", 16, "bold")).pack(pady=10)
         
         ctk.CTkLabel(frame_vinculo, text="Selecione um Psicólogo:").pack(pady=(10,0))
         self.combo_psicologas = ctk.CTkComboBox(frame_vinculo, values=self.db.get_psicologas(), state="readonly", width=250)
@@ -467,7 +585,7 @@ class SISPE:
         self.tree_alunos_vinculo.heading("Série", text="Série")
         self.tree_alunos_vinculo.pack(fill="both", expand=True)
 
-        ctk.CTkLabel(frame_vinculo, text="Selecione o Pai:").pack(pady=(10,0))
+        ctk.CTkLabel(frame_vinculo, text="Selecione o Responsável:").pack(pady=(10,0))
         self.combo_pais = ctk.CTkComboBox(frame_vinculo, values=self.db.get_pais(), state="readonly", width=250)
         self.combo_pais.pack(pady=5)
 
@@ -576,7 +694,7 @@ class SISPE:
             messagebox.showerror("Erro", "Selecione um aluno na lista.")
             return
         if not pai_username:
-            messagebox.showerror("Erro", "Selecione um pai.")
+            messagebox.showerror("Erro", "Selecione um Responsável.")
             return
         aluno_id = self.tree_alunos_vinculo.item(selecionado, "values")[0]
         self.db.vincular_pai_aluno(aluno_id, pai_username)
