@@ -287,7 +287,6 @@ class SISPE:
 
                     self.configurar_interface_por_tipo()
                     
-                    # Cria as telas internas agora que o conteudo_frame já existe
                     if "gestao" not in self.frames:
                         self.criar_tela_gestao()
                         self.criar_tela_registro()
@@ -310,35 +309,34 @@ class SISPE:
             self.principal.destroy()
 
     def criar_tela_login(self):
-        # Configurações gerais do CTk
-        ctk.set_appearance_mode("light")  # Tema claro
-        ctk.set_default_color_theme("blue")  # Tema base
+        ctk.set_appearance_mode("light")
+        ctk.set_default_color_theme("blue")
 
         # Frame principal com fundo azul marinho
         self.frame_login = ctk.CTkFrame(self.principal, fg_color="#1E3A8A") 
         self.frames["login"] = self.frame_login
         self.frame_login.pack(fill="both", expand=True)
 
-    # Container central para os campos (fundo bege claro)
+        # Container central para os campos (fundo bege claro)
         self.card_login = ctk.CTkFrame(self.frame_login, fg_color="#F5F5DC", corner_radius=15)
         self.card_login.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.4, relheight=0.5)
 
-    # Título
+        # Título
         self.label_titulo = ctk.CTkLabel(self.card_login, text="SISPE", font=("Arial", 26, "bold"), text_color="#1E3A8A")
         self.label_titulo.pack(pady=(20, 10))
 
-    # Campo Usuário
+        # Campo Usuário
         self.campo_usuario_login = ctk.CTkEntry(self.card_login, placeholder_text="Usuário", fg_color="white", text_color="black")
         self.campo_usuario_login.pack(pady=10, padx=40, fill="x")
 
-    # Campo Senha
+        # Campo Senha
         self.campo_senha_login = ctk.CTkEntry(self.card_login, placeholder_text="Senha", fg_color="white", text_color="black", show="*")
         self.campo_senha_login.pack(pady=10, padx=40, fill="x")
 
-        self.mostrar_senha = False  # Estado inicial: senha oculta
+        self.mostrar_senha = False
         self.botao_mostrar_senha = ctk.CTkButton(
             self.card_login,
-            text="👁",
+            text="🔒",
             command=self.alternar_visibilidade_senha,
             fg_color="transparent",
             hover=False,
@@ -351,7 +349,7 @@ class SISPE:
         self.botao_login = ctk.CTkButton(
             self.card_login,
             text="Entrar",
-            fg_color="#047857",  # Verde escuro
+            fg_color="#047857",
             hover_color="#065F46",
             corner_radius=20,
             command= self.fazer_login
@@ -361,10 +359,10 @@ class SISPE:
     def alternar_visibilidade_senha(self):
         if self.mostrar_senha:
             self.campo_senha_login.configure(show="*")
-            self.botao_mostrar_senha.configure(text="👁")  # Ícone de olho fechado
+            self.botao_mostrar_senha.configure(text="🔒")
         else:
             self.campo_senha_login.configure(show="")
-            self.botao_mostrar_senha.configure(text="🙈")  # Ícone de olho aberto
+            self.botao_mostrar_senha.configure(text="🔓")
         self.mostrar_senha = not self.mostrar_senha
 
     def criar_usuario_admin(self):
@@ -910,7 +908,7 @@ class SISPE:
             detalhe_win = ctk.CTkToplevel(self.principal)
             detalhe_win.title(f"Detalhes de {aluno.nome}")
             detalhe_win.geometry("400x350")
-            detalhe_win.transient(self.principal) # Mantém a janela no topo
+            detalhe_win.transient(self.principal)
             
             ctk.CTkLabel(detalhe_win, text=f"Nome: {aluno.nome}", font=("Arial", 14, "bold")).pack(pady=5)
             ctk.CTkLabel(detalhe_win, text=f"Sala: {aluno.sala} | Série: {aluno.serie} | Gravidade: {aluno.gravidade}").pack(pady=5)
@@ -947,8 +945,8 @@ class SISPE:
             messagebox.showinfo("Exclusão de Conta", "Sua conta foi excluída com sucesso.")
 
 if __name__ == "__main__":
-    ctk.set_appearance_mode("Dark")  # Define o tema (Dark, Light, System)
-    ctk.set_default_color_theme("blue") # Define a cor (blue, green, dark-blue)
+    ctk.set_appearance_mode("Dark")
+    ctk.set_default_color_theme("blue")
     
     root = ctk.CTk()
     app = SISPE(root)
