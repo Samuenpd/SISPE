@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from tkinter import ttk
-import hashlib
+import bcrypt
 import sqlite3
 import os
 
@@ -34,12 +34,26 @@ class DatabaseManager:
         self.create_tables()
 
     def _hash_senha(self, senha):
-        return hashlib.sha256(senha.encode()).hexdigest()
+        return bcrypt.hashpw(senha.encode(), bcrypt.gensalt()).decode()
+
+    def _verificar_senha(self, senha, senha_hash):
+        return bcrypt.checkpw(senha.encode(), senha_hash.encode())
 
     def add_user(self, username, password, user_type):
+        # Validate inputs
+        if not username or not password or not user_type:
+            raise ValueError("Todos os campos são obrigatórios.")
+        if len(username) > 50 or len(password) > 50:
+            raise ValueError("Usuário e senha devem ter no máximo 50 caracteres.")
+        if user_type not in ["pai", "psicologa", "secretaria"]:
+            raise ValueError("Tipo de usuário inválido.")
+
         password_hash = self._hash_senha(password)
         try:
-            self.cursor.execute("INSERT INTO usuarios (username, password_hash, user_type) VALUES (?, ?, ?)", (username, password_hash, user_type))
+            self.cursor.execute(
+                "INSERT INTO usuarios (username, password_hash, user_type) VALUES (?, ?, ?)",
+                (username, password_hash, user_type)
+            )
             self.conn.commit()
             return True
         except sqlite3.IntegrityError:
@@ -77,6 +91,7 @@ class DatabaseManager:
         self.conn.commit()
 
     def get_user(self, username):
+        # Use parameterized query to prevent SQL injection
         self.cursor.execute("SELECT password_hash, user_type FROM usuarios WHERE username = ?", (username,))
         return self.cursor.fetchone()
 
@@ -142,7 +157,7 @@ class DatabaseManager:
 
     def get_psicologas(self):
         self.cursor.execute("SELECT username FROM usuarios WHERE user_type = 'psicologa'")
-        return [row[0] for row in self.cursor.fetchall()]
+        return [row[0] for row in self.cursor.fetchall()]  
 
 class SISPE:
     def __init__(self, principal):
@@ -182,32 +197,46 @@ class SISPE:
         botao.bind("<Leave>", ao_sair)
 
     def fazer_login(self):
-        usuario = self.campo_usuario_login.get()
-        senha = self.campo_senha_login.get()
+        usuario = self.campo_usuario_login.get().strip()
+        senha = self.campo_senha_login.get().strip()
 
-        senha_hash = self.db._hash_senha(senha)
+        if not usuario or not senha:
+            messagebox.showerror("Login", "Usuário e senha são obrigatórios.")
+            return
+
         result = self.db.get_user(usuario)
+        if result:
+            senha_hash = result[0]
+            try:
+                if self.db._verificar_senha(senha, senha_hash):
+                    if not senha_hash.startswith("$2b$"):
+                        novo_hash = self.db._hash_senha(senha)
+                        self.db.cursor.execute("UPDATE usuarios SET password_hash = ? WHERE username = ?", (novo_hash, usuario))
+                        self.db.conn.commit()
 
-        if result and senha_hash == result[0]:
-            self.usuario_logado = usuario
-            self.user_type = result[1]
+                    self.usuario_logado = usuario
+                    self.user_type = result[1]
 
-            self.campo_usuario_login.delete(0, ctk.END)
-            self.campo_senha_login.delete(0, ctk.END)
-            self.label_bem_vindo.configure(text=f"Bem-vindo, {self.usuario_logado}!")
+                    self.campo_usuario_login.delete(0, ctk.END)
+                    self.campo_senha_login.delete(0, ctk.END)
+                    self.label_bem_vindo.configure(text=f"Bem-vindo, {self.usuario_logado}!")
 
-            self.configurar_interface_por_tipo()
-            
-            # Cria as telas internas agora que o conteudo_frame já existe
-            if "gestao" not in self.frames:
-                self.criar_tela_gestao()
-                self.criar_tela_registro()
-                self.criar_tela_perfil()
-                self.criar_tela_observacoes()
-                self.criar_tela_vinculo()
-                self.criar_tela_ver_alunos()
+                    self.configurar_interface_por_tipo()
+                    
+                    # Cria as telas internas agora que o conteudo_frame já existe
+                    if "gestao" not in self.frames:
+                        self.criar_tela_gestao()
+                        self.criar_tela_registro()
+                        self.criar_tela_perfil()
+                        self.criar_tela_observacoes()
+                        self.criar_tela_vinculo()
+                        self.criar_tela_ver_alunos()
 
-            self.mostrar_frame("principal")
+                    self.mostrar_frame("principal")
+                else:
+                    messagebox.showerror("Login", "Usuário ou senha incorretos.")
+            except ValueError:
+                messagebox.showerror("Erro", "O hash da senha é inválido. Entre em contato com o administrador.")
         else:
             messagebox.showerror("Login", "Usuário ou senha incorretos.")
 
@@ -215,9 +244,6 @@ class SISPE:
         if messagebox.askokcancel("Sair", "Tem certeza que deseja sair?"):
             self.db.close()
             self.principal.destroy()
-
-    def _hash_senha(self, senha):
-        return hashlib.sha256(senha.encode()).hexdigest()
 
     def criar_tela_login(self):
         # Configurações gerais do CTk
@@ -249,13 +275,13 @@ class SISPE:
         self.botao_mostrar_senha = ctk.CTkButton(
             self.card_login,
             text="👁",
-            width=30,
-            height=30,
-            text_color="black",
+            command=self.alternar_visibilidade_senha,
             fg_color="transparent",
-            command=self.alternar_visibilidade_senha
+            hover=False,
+            width=5,
+            text_color="black"
         )
-        self.botao_mostrar_senha.place(relx=0.9, rely=0.44, anchor="center")
+        self.botao_mostrar_senha.place(relx=0.93, rely=0.44, anchor="center")
 
     # Botão Login (verde escuro)
         self.botao_login = ctk.CTkButton(
@@ -278,16 +304,24 @@ class SISPE:
         self.mostrar_senha = not self.mostrar_senha
 
     def criar_usuario_admin(self):
-        novo_usuario = self.campo_admin_novo_usuario.get()
-        nova_senha = self.campo_admin_nova_senha.get()
-        user_type = self.combo_admin_user_type.get()
-
-        if user_type == "responsável":
-            user_type = "pai"
+        novo_usuario = self.campo_admin_novo_usuario.get().strip()
+        nova_senha = self.campo_admin_nova_senha.get().strip()
+        user_type = self.combo_admin_user_type.get().strip()
 
         if not all([novo_usuario, nova_senha, user_type]):
             messagebox.showerror("Erro", "Preencha todos os campos.")
             return
+
+        if len(novo_usuario) > 50 or len(nova_senha) > 50:
+            messagebox.showerror("Erro", "Usuário e senha devem ter no máximo 50 caracteres.")
+            return
+
+        if user_type not in ["psicologa", "secretaria", "responsável"]:
+            messagebox.showerror("Erro", "Tipo de usuário inválido.")
+            return
+
+        if user_type == "responsável":
+            user_type = "pai"
 
         if self.db.add_user(novo_usuario, nova_senha, user_type):
             messagebox.showinfo("Sucesso", f"Usuário '{novo_usuario}' ({user_type}) criado com sucesso!")
@@ -441,7 +475,7 @@ class SISPE:
 
         # "Card" central
         card = ctk.CTkFrame(frame_gestao, fg_color="#F5F5DC", corner_radius=15)
-        card.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.4, relheight=0.55)
+        card.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.4, relheight=0.7)
 
         # Título
         ctk.CTkLabel(card, text='Cadastro de Usuários', font=("Arial", 20, "bold"), text_color="#1E3A8A").pack(pady=(25, 15))
@@ -803,7 +837,7 @@ class SISPE:
             self.tree_alunos_pai.insert("", "end", iid=aluno.id, values=(aluno.id, aluno.nome, aluno.sala, aluno.serie, aluno.gravidade))
 
     def excluir_conta(self):
-        if messagebox.askyesno("Confirmação de Exclusão", "Tem certeza? Esta ação é definitiva e removerá todos os seus dados."):
+        if messagebox.askyesno("Confirmação", "Excluir este usuário também removerá todos os dados relacionados. Deseja continuar?"):
             self.db.delete_user(self.usuario_logado)
             self.fazer_logout()
             messagebox.showinfo("Exclusão de Conta", "Sua conta foi excluída com sucesso.")
@@ -815,3 +849,7 @@ if __name__ == "__main__":
     root = ctk.CTk()
     app = SISPE(root)
     root.mainloop()
+    root = ctk.CTk()
+    app = SISPE(root)
+    root.mainloop()
+
