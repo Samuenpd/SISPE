@@ -4,8 +4,10 @@ from tkinter import ttk
 import bcrypt
 import sqlite3
 import os
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+import openpyxl
 
-# --- CLASSES DE DADOS (Sem alteração na lógica) ---
 class Aluno:
     def __init__(self, nome, sala, serie, gravidade, id=None, observacoes=''):
         self.nome = nome
@@ -122,9 +124,19 @@ class DatabaseManager:
         self.cursor.execute("UPDATE alunos SET nome = ?, sala = ?, serie = ?, gravidade = ? WHERE id = ?", (nome, sala, serie, gravidade, aluno_id))
         self.conn.commit()
 
-    def delete_aluno(self, aluno_id):
+    def delete_aluno(self, aluno_id, pasta_relatorios=None):
+        aluno = self.get_aluno_by_id(aluno_id)
         self.cursor.execute("DELETE FROM alunos WHERE id = ?", (aluno_id,))
         self.conn.commit()
+
+        if aluno and pasta_relatorios:
+            nome_limpo = aluno.nome.replace(" ", "_").replace("/", "-")
+            arquivo_pdf = os.path.join(pasta_relatorios, f"Relatorio_{aluno.id}_{nome_limpo}.pdf")
+            if os.path.exists(arquivo_pdf):
+                try:
+                    os.remove(arquivo_pdf)
+                except Exception as e:
+                    print(f"Erro ao excluir PDF: {e}")
 
     def close(self):
         self.conn.close()
@@ -137,7 +149,7 @@ class DatabaseManager:
         try:
             self.cursor.execute("INSERT INTO alunos_pais (aluno_id, pai_id) VALUES (?, ?)", (aluno_id, pai_username))
             self.conn.commit()
-            messagebox.showinfo("Sucesso", f"Aluno vinculado ao pai '{pai_username}' com sucesso!")
+            messagebox.showinfo("Sucesso", f"Aluno vinculado a '{pai_username}' com sucesso!")
         except sqlite3.IntegrityError:
             messagebox.showerror("Erro", "Esse vínculo já existe.")
     
@@ -159,12 +171,58 @@ class DatabaseManager:
         self.cursor.execute("SELECT username FROM usuarios WHERE user_type = 'psicologa'")
         return [row[0] for row in self.cursor.fetchall()]  
 
+    def exportar_aluno_pdf(self, aluno_id, pasta_destino):
+        aluno = self.get_aluno_by_id(aluno_id)
+        if not aluno:
+            return None
+
+        os.makedirs(pasta_destino, exist_ok=True)
+        nome_limpo = aluno.nome.replace(" ", "_").replace("/", "-")
+        arquivo = os.path.join(pasta_destino, f"Relatorio_{aluno.id}_{nome_limpo}.pdf")
+
+        c = canvas.Canvas(arquivo, pagesize=A4)
+        largura, altura = A4
+
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(50, altura - 50, "Relatório do Aluno")
+
+        c.setFont("Helvetica", 12)
+        y = altura - 100
+        c.drawString(50, y, f"ID: {aluno.id}")
+        c.drawString(50, y - 20, f"Nome: {aluno.nome}")
+        c.drawString(50, y - 40, f"Sala: {aluno.sala}")
+        c.drawString(50, y - 60, f"Série: {aluno.serie}")
+        c.drawString(50, y - 80, f"Gravidade: {aluno.gravidade}")
+
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(50, y - 120, "Observações:")
+        c.setFont("Helvetica", 10)
+
+        texto = aluno.observacoes or "Nenhuma observação registrada."
+        linhas = texto.split("\n")
+        y_texto = y - 140
+        for linha in linhas:
+            c.drawString(60, y_texto, linha)
+            y_texto -= 15
+            if y_texto < 50:
+                c.showPage()
+                y_texto = altura - 50
+                c.setFont("Helvetica", 10)
+
+        c.save()
+        return arquivo
+
+
 class SISPE:
     def __init__(self, principal):
         self.principal = principal
         principal.title("SISPE")
         principal.geometry("900x600")
         principal.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+        desktop_path = os.path.join(os.path.expanduser("~"), "Desktop")
+        self.pasta_relatorios = os.path.join(desktop_path, "relatorios")
+        os.makedirs(self.pasta_relatorios, exist_ok=True)
 
         self.frames = {}
         self.usuario_logado = None
@@ -174,6 +232,12 @@ class SISPE:
 
         self.criar_tela_login()
         self.criar_tela_principal()
+        self.criar_tela_gestao()
+        self.criar_tela_registro()
+        self.criar_tela_perfil()
+        self.criar_tela_observacoes()
+        self.criar_tela_vinculo()
+        self.criar_tela_ver_alunos()
 
         self.mostrar_frame("login")
 
@@ -432,20 +496,12 @@ class SISPE:
     def _configurar_estilo_treeview(self):
         style = ttk.Style()
         
-        # Use o tema 'clam', que oferece melhor suporte para personalização de cores
         style.theme_use("clam")
-        
-        # Cores que combinam com o tema "blue" (light) do CustomTkinter
-        # Fundo do Treeview e Fieldbackground
         bg_color = "#ebebeb" 
-        # Cor de seleção (o mesmo azul do botão padrão)
         selected_color = "#3b8ed8" 
-        # Cor do texto
         text_color = "#363636"
-        # Fundo do cabeçalho
         header_bg_color = "#e5e5e5" 
 
-        # Configura o estilo para o corpo do Treeview
         style.configure("Treeview", 
                         background=bg_color, 
                         foreground=text_color, 
@@ -596,6 +652,8 @@ class SISPE:
         botoes_frame = ctk.CTkFrame(frame_obs, fg_color="transparent")
         botoes_frame.grid(row=3, column=0, pady=10)
         ctk.CTkButton(botoes_frame, text="Salvar Observações", command=self.salvar_observacoes).pack(side="left", padx=10)
+        ctk.CTkButton(botoes_frame, text="Fechar", command=lambda: self.mostrar_frame("registro")).pack(side="left", padx=10)
+
 
     def criar_tela_vinculo(self):
         self._configurar_estilo_treeview()
@@ -717,6 +775,7 @@ class SISPE:
             return
         novas_observacoes = self.texto_observacoes.get("1.0", ctk.END).strip()
         self.db.aluno_observação(self.aluno_id_observacao, novas_observacoes)
+        self.db.exportar_aluno_pdf(self.aluno_id_observacao, self.pasta_relatorios)
         messagebox.showinfo("Sucesso", "Observações salvas com sucesso!")
         self.aluno_id_observacao = None
         self.mostrar_frame("registro")
@@ -744,26 +803,55 @@ class SISPE:
         if self.user_type != 'psicologa':
             messagebox.showerror("Acesso Negado", "Apenas psicólogas podem registrar alunos.")
             return
-    
-        nome, sala, serie, gravidade = self.entry_nome.get(), self.entry_sala.get(), self.entry_serie.get(), self.gravidade_combo.get()
+
+        nome, sala, serie, gravidade = (
+            self.entry_nome.get().strip(),
+            self.entry_sala.get().strip(),
+            self.entry_serie.get().strip(),
+            self.gravidade_combo.get().strip()
+        )
+
         if not all([nome, sala, serie, gravidade]):
             messagebox.showerror("Registro", "Preencha todos os campos.")
             return
-    
+
         try:
-            int(sala); int(serie)
+            int(sala)
+            int(serie)
         except ValueError:
             messagebox.showerror("Registro", "Sala e Série devem ser números.")
             return
-    
-        if self.aluno_id_edicao is not None:
-            self.db.update_aluno(self.aluno_id_edicao, nome, sala, serie, gravidade)
-            messagebox.showinfo("Registro", "Aluno atualizado com sucesso!")
+
+        if self.aluno_id_edicao:
+            aluno_id = int(self.aluno_id_edicao)
+
+            aluno_antigo = self.db.get_aluno_by_id(aluno_id)
+            if aluno_antigo and aluno_antigo.nome != nome:
+                nome_antigo_limpo = aluno_antigo.nome.replace(" ", "_").replace("/", "-")
+                arquivo_antigo = os.path.join(self.pasta_relatorios, f"Relatorio_{aluno_id}_{nome_antigo_limpo}.pdf")
+                if os.path.exists(arquivo_antigo):
+                    try:
+                        os.remove(arquivo_antigo)
+                        print(f"🗑️ PDF antigo removido: {arquivo_antigo}")
+                    except Exception as e:
+                        print(f"Erro ao remover PDF antigo: {e}")
+
+            # 🔹 Atualiza o aluno no banco
+            self.db.update_aluno(aluno_id, nome, sala, serie, gravidade)
+
+            # 🔹 Gera novo PDF atualizado
+            self.db.exportar_aluno_pdf(aluno_id, self.pasta_relatorios)
+            messagebox.showinfo("Sucesso", f"Aluno '{nome}' e PDF atualizados com sucesso!")
             self.aluno_id_edicao = None
+
+        # 🔹 Criar novo aluno
         else:
             self.db.add_aluno(nome, sala, serie, gravidade, self.usuario_logado)
-            messagebox.showinfo("Registro", "Aluno registrado com sucesso!")
+            novo_aluno = self.db.get_alunos_by_user(self.usuario_logado)[-1]
+            self.db.exportar_aluno_pdf(novo_aluno.id, self.pasta_relatorios)
+            messagebox.showinfo("Sucesso", f"Aluno '{nome}' registrado e PDF criado!")
 
+        # 🔹 Limpa os campos e atualiza lista
         self.entry_nome.delete(0, ctk.END)
         self.entry_sala.delete(0, ctk.END)
         self.entry_serie.delete(0, ctk.END)
@@ -780,9 +868,12 @@ class SISPE:
         aluno_nome = self.tree_alunos.item(item_selecionado, "values")[0]
     
         if messagebox.askyesno("Confirmar Exclusão", f"Tem certeza que deseja excluir o aluno '{aluno_nome}'?"):
-            self.db.delete_aluno(aluno_id)
+            self.db.delete_aluno(aluno_id, self.pasta_relatorios)
             self.atualizar_exibicao_alunos()
-            messagebox.showinfo("Exclusão", f"Aluno '{aluno_nome}' excluído com sucesso.")
+            messagebox.showinfo(
+                "Exclusão", 
+                f"Aluno '{aluno_nome}' e seu relatório PDF foram removidos com sucesso!"
+            )
 
     def editar_aluno(self):
         item_selecionado = self.tree_alunos.focus()
@@ -836,6 +927,19 @@ class SISPE:
         for aluno in alunos:
             self.tree_alunos_pai.insert("", "end", iid=aluno.id, values=(aluno.id, aluno.nome, aluno.sala, aluno.serie, aluno.gravidade))
 
+    def exportar_relatorio(self, formato):
+        if self.aluno_id_observacao is None:
+            messagebox.showerror("Erro", "Nenhum aluno selecionado.")
+            return
+    
+        if formato == "pdf":
+            arquivo = self.db.exportar_aluno_pdf(self.aluno_id_observacao, self.pasta_relatorios)
+
+        if arquivo:
+            messagebox.showinfo("Sucesso", f"Relatório exportado: {arquivo}")
+        else:
+            messagebox.showerror("Erro", "Falha ao exportar relatório.")
+
     def excluir_conta(self):
         if messagebox.askyesno("Confirmação", "Excluir este usuário também removerá todos os dados relacionados. Deseja continuar?"):
             self.db.delete_user(self.usuario_logado)
@@ -849,7 +953,3 @@ if __name__ == "__main__":
     root = ctk.CTk()
     app = SISPE(root)
     root.mainloop()
-    root = ctk.CTk()
-    app = SISPE(root)
-    root.mainloop()
-
