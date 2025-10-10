@@ -330,22 +330,26 @@ class SISPE:
         self.campo_usuario_login.pack(pady=10, padx=40, fill="x")
 
         # Campo Senha
-        self.campo_senha_login = ctk.CTkEntry(self.card_login, placeholder_text="Senha", fg_color="white", text_color="black", show="*")
-        self.campo_senha_login.pack(pady=10, padx=40, fill="x")
+        senha_container = ctk.CTkFrame(self.card_login, fg_color="transparent")
+        senha_container.pack(pady=10, padx=40, fill="x")
+
+        self.campo_senha_login = ctk.CTkEntry(senha_container, placeholder_text="Senha", fg_color="white", text_color="black", show="*")
+        self.campo_senha_login.pack(side="left", fill="x", expand=True)
 
         self.mostrar_senha = False
         self.botao_mostrar_senha = ctk.CTkButton(
-            self.card_login,
+            senha_container,
             text="🔒",
             command=self.alternar_visibilidade_senha,
             fg_color="transparent",
             hover=False,
-            width=5,
+            width=10,
             text_color="black"
         )
-        self.botao_mostrar_senha.place(relx=0.93, rely=0.44, anchor="center")
+        self.botao_mostrar_senha.pack(side="right", padx=5)
 
-    # Botão Login (verde escuro)
+
+        # Botão Login (verde escuro)
         self.botao_login = ctk.CTkButton(
             self.card_login,
             text="Entrar",
