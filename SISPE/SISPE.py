@@ -212,7 +212,6 @@ class DatabaseManager:
         c.save()
         return arquivo
 
-
 class SISPE:
     def __init__(self, principal):
         self.principal = principal
@@ -333,7 +332,7 @@ class SISPE:
         senha_container = ctk.CTkFrame(self.card_login, fg_color="transparent")
         senha_container.pack(pady=10, padx=40, fill="x")
 
-        self.campo_senha_login = ctk.CTkEntry(senha_container, placeholder_text="Senha", fg_color="white", text_color="black", show="*")
+        self.campo_senha_login = ctk.CTkEntry(senha_container, placeholder_text="Senha", fg_color="white", text_color="black", show="•")
         self.campo_senha_login.pack(side="left", fill="x", expand=True)
 
         self.mostrar_senha = False
@@ -362,7 +361,7 @@ class SISPE:
 
     def alternar_visibilidade_senha(self):
         if self.mostrar_senha:
-            self.campo_senha_login.configure(show="*")
+            self.campo_senha_login.configure(show="•")
             self.botao_mostrar_senha.configure(text="🔒")
         else:
             self.campo_senha_login.configure(show="")
@@ -531,7 +530,7 @@ class SISPE:
         self.frames['gestao'] = frame_gestao
         frame_gestao.pack(fill="both", expand=True)
 
-        # "Card" central
+        # Card central
         card = ctk.CTkFrame(frame_gestao, fg_color="#F5F5DC", corner_radius=15)
         card.place(relx=0.5, rely=0.5, anchor="center", relwidth=0.4, relheight=0.7)
 
@@ -647,7 +646,7 @@ class SISPE:
         self.label_obs_info = ctk.CTkLabel(frame_obs, text='Série: X | Sala: Y | Gravidade: Z')
         self.label_obs_info.grid(row=1, column=0, pady=(0, 20))
         
-        # CTkTextbox substitui o tk.Text e já vem com scrollbar
+        # CTkTextbox substitui o tk.Text e já vem com negocinho de rolar pagina
         self.texto_observacoes = ctk.CTkTextbox(frame_obs, wrap="word", font=("Arial", 12))
         self.texto_observacoes.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
 
@@ -838,22 +837,22 @@ class SISPE:
                     except Exception as e:
                         print(f"Erro ao remover PDF antigo: {e}")
 
-            # 🔹 Atualiza o aluno no banco
+            # Atualiza o aluno no banco
             self.db.update_aluno(aluno_id, nome, sala, serie, gravidade)
 
-            # 🔹 Gera novo PDF atualizado
+            # Gera novo PDF atualizado
             self.db.exportar_aluno_pdf(aluno_id, self.pasta_relatorios)
             messagebox.showinfo("Sucesso", f"Aluno '{nome}' e PDF atualizados com sucesso!")
             self.aluno_id_edicao = None
 
-        # 🔹 Criar novo aluno
+        # Criar novo aluno
         else:
             self.db.add_aluno(nome, sala, serie, gravidade, self.usuario_logado)
             novo_aluno = self.db.get_alunos_by_user(self.usuario_logado)[-1]
             self.db.exportar_aluno_pdf(novo_aluno.id, self.pasta_relatorios)
             messagebox.showinfo("Sucesso", f"Aluno '{nome}' registrado e PDF criado!")
 
-        # 🔹 Limpa os campos e atualiza lista
+        # Limpa os campos e atualiza lista
         self.entry_nome.delete(0, ctk.END)
         self.entry_sala.delete(0, ctk.END)
         self.entry_serie.delete(0, ctk.END)
@@ -955,3 +954,6 @@ if __name__ == "__main__":
     root = ctk.CTk()
     app = SISPE(root)
     root.mainloop()
+    app = SISPE(root)
+    root.mainloop()
+
