@@ -7,6 +7,7 @@ import os
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import openpyxl
+import datetime
 
 class Aluno:
     def __init__(self, nome, sala, serie, gravidade, id=None, observacoes=''):
@@ -90,10 +91,42 @@ class DatabaseManager:
                 FOREIGN KEY (pai_id) REFERENCES usuarios(username) ON DELETE CASCADE
             );
         ''')
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS historico_observacoes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                aluno_id INTEGER NOT NULL,
+                data_hora TEXT NOT NULL,
+                observacao TEXT NOT NULL,
+                FOREIGN KEY (aluno_id) REFERENCES alunos (id) ON DELETE CASCADE
+            )
+        ''')
+
         self.conn.commit()
 
+    def insert_historico_observacao(self, aluno_id, observacao):
+        data_hora = datetime.datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+        
+        if observacao.strip():
+            self.cursor.execute('''
+                INSERT INTO historico_observacoes (aluno_id, data_hora, observacao)
+                VALUES (?, ?, ?)
+            ''', (aluno_id, data_hora, observacao))
+            
+            self.cursor.execute('''
+                UPDATE alunos SET observacoes = ? WHERE id = ?
+            ''', ('', aluno_id))
+            
+            self.conn.commit()
+
+    def get_historico_observacoes(self, aluno_id):
+        self.cursor.execute('''
+            SELECT data_hora, observacao FROM historico_observacoes
+            WHERE aluno_id = ?
+            ORDER BY data_hora DESC
+        ''', (aluno_id,))
+        return self.cursor.fetchall()
+
     def get_user(self, username):
-        # Use parameterized query to prevent SQL injection
         self.cursor.execute("SELECT password_hash, user_type FROM usuarios WHERE username = ?", (username,))
         return self.cursor.fetchone()
 
@@ -116,6 +149,22 @@ class DatabaseManager:
             return Aluno(nome=data[1], sala=data[2], serie=data[3], gravidade=data[4], observacoes=data[5], id=data[0])
         return None
     
+    def get_aluno_by_name(self, termo_busca=""):
+        query = "SELECT nome FROM alunos WHERE nome LIKE ? ORDER BY nome"
+        termo = f"%{termo_busca}%"
+        self.cursor.execute(query, (termo,))
+        nomes_data = self.cursor.fetchall()
+        return [row[0] for row in nomes_data]
+
+    def get_aluno_id_by_name(self, nome_completo):
+        query = "SELECT id, nome FROM alunos WHERE nome = ?"
+        self.cursor.execute(query, (nome_completo,))
+        data = self.cursor.fetchone()
+        
+        if data:
+            return {"id": data[0], "nome": data[1]}
+        return None
+
     def aluno_observação(self, aluno_id, observacao):
         self.cursor.execute('UPDATE alunos SET observacoes = ? WHERE id = ?', (observacao, aluno_id))
         self.conn.commit()
@@ -176,6 +225,15 @@ class DatabaseManager:
         if not aluno:
             return None
 
+        historico = self.get_historico_observacoes(aluno_id)
+        
+        texto_formatado = ""
+        if historico:
+            for data_hora, observacao in historico:
+                texto_formatado += f"[{data_hora}]\n{observacao}\n{'-'*50}\n\n"
+        else:
+            texto_formatado = "Nenhuma observação registrada."
+            
         os.makedirs(pasta_destino, exist_ok=True)
         nome_limpo = aluno.nome.replace(" ", "_").replace("/", "-")
         arquivo = os.path.join(pasta_destino, f"Relatorio_{aluno.id}_{nome_limpo}.pdf")
@@ -187,7 +245,9 @@ class DatabaseManager:
         c.drawString(50, altura - 50, "Relatório do Aluno")
 
         c.setFont("Helvetica", 12)
-        y = altura - 100
+        
+        y = altura - 100 
+
         c.drawString(50, y, f"ID: {aluno.id}")
         c.drawString(50, y - 20, f"Nome: {aluno.nome}")
         c.drawString(50, y - 40, f"Sala: {aluno.sala}")
@@ -196,18 +256,49 @@ class DatabaseManager:
 
         c.setFont("Helvetica-Bold", 12)
         c.drawString(50, y - 120, "Observações:")
-        c.setFont("Helvetica", 10)
+        
+        texto_historico_completo = texto_formatado.strip()
+        
+        textobject = c.beginText(60, y - 140)
+        textobject.setFont("Helvetica", 10)
+        
+        largura_maxima = largura - 120
 
-        texto = aluno.observacoes or "Nenhuma observação registrada."
-        linhas = texto.split("\n")
-        y_texto = y - 140
+        linhas = texto_historico_completo.split("\n")
+        
         for linha in linhas:
-            c.drawString(60, y_texto, linha)
-            y_texto -= 15
-            if y_texto < 50:
-                c.showPage()
-                y_texto = altura - 50
-                c.setFont("Helvetica", 10)
+            while len(linha) > 0:
+                pedaço = linha
+                
+                if c.stringWidth(pedaço, "Helvetica", 10) > largura_maxima:
+                    quebra = linha
+                    while c.stringWidth(quebra, "Helvetica", 10) > largura_maxima and quebra.rfind(' ') != -1:
+                        quebra = quebra[:quebra.rfind(' ')]
+                    
+                    if quebra == "":
+                        quebra = linha[:45] 
+                        linha = linha[45:]
+                    else:
+                        if quebra != linha:
+                            linha = linha[len(quebra):].lstrip()
+                        else:
+                            linha = "" # A linha cabe inteira
+
+                    textobject.textLine(quebra)
+                    
+                    # Verifica se precisa de nova página
+                    if textobject.getY() < 50:
+                        c.drawText(textobject)
+                        c.showPage()
+                        textobject = c.beginText(60, altura - 50)
+                        textobject.setFont("Helvetica", 10)
+                        
+                else:
+                    # A linha cabe inteira
+                    textobject.textLine(pedaço)
+                    linha = ""
+                    
+        c.drawText(textobject) # Desenha o texto restante
 
         c.save()
         return arquivo
@@ -228,6 +319,9 @@ class SISPE:
         self.db = DatabaseManager()
         self.aluno_id_edicao = None
         self.aluno_id_observacao = None
+
+        self.termo_busca = ctk.StringVar()
+        self.termo_busca.trace_add("write", self.filtrar_alunos)
 
         self.criar_tela_login()
         self.criar_tela_principal()
@@ -309,7 +403,6 @@ class SISPE:
 
     def criar_tela_login(self):
         ctk.set_appearance_mode("light")
-        ctk.set_default_color_theme("blue")
 
         # Frame principal com fundo azul marinho
         self.frame_login = ctk.CTkFrame(self.principal, fg_color="#1E3A8A") 
@@ -401,6 +494,7 @@ class SISPE:
         self.botao_vinculo.pack_forget()
         self.botao_gerenciar_usuarios.pack_forget()
         self.botao_ver_alunos.pack_forget()
+        self.pesquisa_container.pack_forget()
 
         if self.user_type == 'secretaria':
             self.botao_gerenciar_usuarios.pack(padx=10, side=ctk.LEFT)
@@ -408,6 +502,7 @@ class SISPE:
         
         elif self.user_type == 'psicologa':
             self.botao_registrar.pack(padx=10, side=ctk.LEFT)
+            pass
 
         elif self.user_type == 'pai':
             self.botao_ver_alunos.pack(padx=10, side=ctk.LEFT)
@@ -494,7 +589,34 @@ class SISPE:
         self.label_bem_vindo = ctk.CTkLabel(self.conteudo_frame, text="", font=("Arial", 20))
         self.label_bem_vindo.pack(pady=20)
 
-    def _configurar_estilo_treeview(self):
+        self.pesquisa_container = ctk.CTkFrame(self.conteudo_frame, fg_color="transparent")
+        
+        self.entry_pesquisa = ctk.CTkEntry(
+            self.pesquisa_container,
+            placeholder_text="Pesquisar por nome do aluno...",
+            textvariable=self.termo_busca,
+            width=500,
+            height=40, 
+            fg_color="white",
+            text_color="black",
+            border_color="#d3d3d3",
+            border_width=1,
+            corner_radius=20 
+        )
+        self.entry_pesquisa.pack(pady=(0, 0))
+        self.entry_pesquisa.bind("<Return>", self.filtrar_alunos)
+
+        self.sugestoes_frame = ctk.CTkFrame(
+            self.pesquisa_container,
+            fg_color="white",
+            border_width=1,
+            width=500,
+            border_color="#d3d3d3",
+            corner_radius=10 
+        )
+        self.sugestoes_frame.pack_forget()
+
+    def configurar_estilo_treeview(self):
         style = ttk.Style()
         
         style.theme_use("clam")
@@ -564,7 +686,7 @@ class SISPE:
         ).pack(pady=25)
 
     def criar_tela_registro(self):
-        self._configurar_estilo_treeview()
+        self.configurar_estilo_treeview()
         frame_registro = ctk.CTkFrame(self.conteudo_frame, fg_color="transparent")
         self.frames["registro"] = frame_registro
         
@@ -631,33 +753,89 @@ class SISPE:
         
         ctk.CTkLabel(frame_perfil, text='Perfil do Usuário', font=("Arial", 18, "bold")).pack(pady=20, padx=40)
         ctk.CTkButton(frame_perfil, text="Excluir Conta", command=self.excluir_conta, fg_color="#D32F2F", hover_color="#B71C1C").pack(pady=10)
- 
+
     def criar_tela_observacoes(self):
-        frame_obs = ctk.CTkFrame(self.conteudo_frame)
-        self.frames['observacoes'] = frame_obs 
-        frame_obs.pack(fill="both", expand=True, padx=20, pady=20)
         
-        frame_obs.grid_rowconfigure(2, weight=1)
-        frame_obs.grid_columnconfigure(0, weight=1)
-
-        self.label_obs_nome = ctk.CTkLabel(frame_obs, text='Nome do Aluno', font=('Arial', 18, 'bold'))
-        self.label_obs_nome.grid(row=0, column=0, pady=(0, 10))
-
-        self.label_obs_info = ctk.CTkLabel(frame_obs, text='Série: X | Sala: Y | Gravidade: Z')
-        self.label_obs_info.grid(row=1, column=0, pady=(0, 20))
+        self.frame_observacoes = ctk.CTkFrame(self.conteudo_frame) 
+        self.frames["observacoes"] = self.frame_observacoes
+        self.frame_observacoes.pack(fill="both", expand=True)
         
-        # CTkTextbox substitui o tk.Text e já vem com negocinho de rolar pagina
-        self.texto_observacoes = ctk.CTkTextbox(frame_obs, wrap="word", font=("Arial", 12))
-        self.texto_observacoes.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
+        self.scroll_obs_container = ctk.CTkScrollableFrame(self.frame_observacoes)
+        self.scroll_obs_container.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        self.label_obs_nome = ctk.CTkLabel(self.scroll_obs_container, text="", font=("Arial", 16, "bold"))
+        self.label_obs_nome.pack(pady=(30, 5))
 
-        botoes_frame = ctk.CTkFrame(frame_obs, fg_color="transparent")
-        botoes_frame.grid(row=3, column=0, pady=10)
-        ctk.CTkButton(botoes_frame, text="Salvar Observações", command=self.salvar_observacoes).pack(side="left", padx=10)
-        ctk.CTkButton(botoes_frame, text="Fechar", command=lambda: self.mostrar_frame("registro")).pack(side="left", padx=10)
+        self.label_obs_info = ctk.CTkLabel(self.scroll_obs_container, text="", font=("Arial", 12))
+        self.label_obs_info.pack(pady=5)
+        
+        self.botao_alternar_historico = ctk.CTkButton(
+            self.scroll_obs_container, 
+            text="Ver Histórico Completo", 
+            command=self.mostrar_historico,
+            width=200 
+        )
+        self.botao_alternar_historico.pack(pady=(20, 30))
 
+        self.nova_obs_frame = ctk.CTkFrame(self.scroll_obs_container, width=500, height=250)
+        self.nova_obs_frame.pack(pady=10) 
+
+        self.label_obs_nova = ctk.CTkLabel(
+            self.nova_obs_frame, 
+            text="Nova Observação:",
+            font=("Arial", 14, "bold")
+        )
+        self.label_obs_nova.pack(pady=(15, 5)) 
+
+        self.texto_observacoes = ctk.CTkTextbox(
+            self.nova_obs_frame, 
+            height=400, 
+            width=600 
+        )
+        self.texto_observacoes.pack(pady=5, padx=10)
+
+        self.botao_salvar_obs = ctk.CTkButton(
+            self.nova_obs_frame, 
+            text="Registrar Nova Observação", 
+            command=self.salvar_observacoes
+        )
+        self.botao_salvar_obs.pack(pady=10)
+
+        self.historico_frame = ctk.CTkFrame(self.scroll_obs_container, width=500, height=500)
+
+        self.label_obs_historico = ctk.CTkLabel(
+            self.historico_frame, 
+            text="Histórico de Observações:",
+            font=("Arial", 14, "bold")
+        )
+        self.label_obs_historico.pack(pady=(20, 10))
+
+        self.texto_historico = ctk.CTkTextbox(
+            self.historico_frame,
+            height=400, 
+            width=580,
+            state="disabled" 
+        )
+        self.texto_historico.pack(pady=5, padx=10)
+        
+        self.botao_fechar_historico = ctk.CTkButton(
+            self.historico_frame, 
+            text="Voltar para Nova Observação", 
+            command=self.esconder_historico
+        )
+        self.botao_fechar_historico.pack(pady=20)
+
+        self.botao_voltar_obs = ctk.CTkButton(
+            self.scroll_obs_container, 
+            text="Voltar", 
+            command=lambda: self.mostrar_frame("registro") 
+        )
+        self.botao_voltar_obs.pack(pady=30)
+        
+        self.historico_frame.pack_forget()
 
     def criar_tela_vinculo(self):
-        self._configurar_estilo_treeview()
+        self.configurar_estilo_treeview()
         frame_vinculo = ctk.CTkFrame(self.conteudo_frame)
         self.frames["vinculo"] = frame_vinculo
         frame_vinculo.pack(fill="both", expand=True, padx=20, pady=20)
@@ -685,7 +863,7 @@ class SISPE:
         ctk.CTkButton(frame_vinculo, text="Vincular", command=self.vincular_pai_aluno).pack(pady=10)
 
     def criar_tela_ver_alunos(self):
-        self._configurar_estilo_treeview()
+        self.configurar_estilo_treeview()
         frame_ver_alunos = ctk.CTkFrame(self.conteudo_frame)
         self.frames["ver_alunos"] = frame_ver_alunos
         frame_ver_alunos.pack(fill="both", expand=True, padx=20, pady=20)
@@ -711,18 +889,28 @@ class SISPE:
                 frame.pack_forget()
 
         if nome_do_frame == "login":
+            self.frames["login"].pack(fill="both", expand=True)
             self.menu_frame.pack_forget() # Esconde o menu principal
             self.conteudo_frame.pack_forget()
-            self.frames["login"].pack(fill="both", expand=True)
         elif nome_do_frame == "principal":
             self.frames["principal"].pack(fill="both", expand=True)
             self.menu_frame.pack(side="top", fill="x") # Mostra o menu
             self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=10, pady=10)
-            # Limpa o frame de conteúdo para mostrar a msg de bem-vindo
+        
             for widget in self.conteudo_frame.winfo_children():
-                if widget != self.label_bem_vindo:
-                    widget.pack_forget()
-            self.label_bem_vindo.pack(pady=20)
+                widget.pack_forget()
+
+            self.label_bem_vindo.pack(pady=(100, 20)) 
+        
+            if self.user_type == 'psicologa':
+                self.pesquisa_container.pack(pady=(0, 20), padx=10)
+                self.entry_pesquisa.pack(pady=(0, 0))
+            else:
+                self.pesquisa_container.pack_forget()
+                self.entry_pesquisa.pack_forget()
+
+            self.sugestoes_frame.pack_forget()
+
         else:
             # Garante que a estrutura principal está visível
             self.frames["principal"].pack(fill="both", expand=True)
@@ -756,30 +944,66 @@ class SISPE:
         self.user_type = None
         self.mostrar_frame("login")
 
-    def abrir_tela_observacoes(self, event):
-        item_selecionado_id = self.tree_alunos.focus() 
-        if not item_selecionado_id:
-            return 
-        self.aluno_id_observacao = item_selecionado_id
+    def abrir_tela_observacoes(self, event_ou_id):
+        if hasattr(event_ou_id, 'widget'):
+            item_selecionado_id = self.tree_alunos.focus() 
+            if not item_selecionado_id:
+                return 
+            aluno_id_para_abrir = item_selecionado_id
+        
+        elif isinstance(event_ou_id, int):
+            aluno_id_para_abrir = event_ou_id
+        
+        else:
+            return
+
+        self.aluno_id_observacao = aluno_id_para_abrir
         aluno = self.db.get_aluno_by_id(self.aluno_id_observacao)
+        
         if aluno:
             self.label_obs_nome.configure(text=aluno.nome)
             self.label_obs_info.configure(text=f"Série: {aluno.serie} | Sala: {aluno.sala} | Gravidade: {aluno.gravidade}")
             
+            # 1. LIMPA A CAIXA DE NOVA OBSERVAÇÃO
             self.texto_observacoes.delete("1.0", ctk.END)
-            self.texto_observacoes.insert("1.0", aluno.observacoes or "")
+            
+            # 2. BUSCA E FORMATA O HISTÓRICO
+            historico = self.db.get_historico_observacoes(self.aluno_id_observacao)
+            texto_formatado = ""
+            
+            # Formata cada entrada: [DATA HORA] Texto da observação
+            for data_hora, observacao in historico:
+                texto_formatado += f"[{data_hora}]\n{observacao}\n{'-'*50}\n" # Linha de separação
+            
+            # 3. EXIBE O HISTÓRICO NO CAMPO DEDICADO
+            self.texto_historico.configure(state="normal") # Habilita para inserir
+            self.texto_historico.delete("1.0", ctk.END)
+            self.texto_historico.insert("1.0", texto_formatado if historico else "Nenhuma observação registrada ainda.")
+            self.texto_historico.configure(state="disabled") # Desabilita para leitura
+
             self.mostrar_frame("observacoes")
 
     def salvar_observacoes(self):
         if self.aluno_id_observacao is None:
             messagebox.showerror("Erro", "Nenhum aluno selecionado.")
             return
-        novas_observacoes = self.texto_observacoes.get("1.0", ctk.END).strip()
-        self.db.aluno_observação(self.aluno_id_observacao, novas_observacoes)
-        self.db.exportar_aluno_pdf(self.aluno_id_observacao, self.pasta_relatorios)
-        messagebox.showinfo("Sucesso", "Observações salvas com sucesso!")
-        self.aluno_id_observacao = None
-        self.mostrar_frame("registro")
+
+        nova_observacao = self.texto_observacoes.get("1.0", ctk.END).strip()
+
+        if not nova_observacao:
+            messagebox.showerror("Erro", "A nova observação não pode ser vazia.")
+            return
+
+        self.db.insert_historico_observacao(self.aluno_id_observacao, nova_observacao)
+        arquivo = self.db.exportar_aluno_pdf(self.aluno_id_observacao, self.pasta_relatorios)
+
+        if arquivo:
+            messagebox.showinfo("Sucesso", "Nova observação registrada e PDF atualizado!")
+        else:
+            messagebox.showerror("Erro", "Nova observação registrada, mas falha ao atualizar o PDF.")
+
+        self.texto_observacoes.delete("1.0", ctk.END) 
+        self.abrir_tela_observacoes(self.aluno_id_observacao)
 
     def vincular_pai_aluno(self):
         selecionado = self.tree_alunos_vinculo.selection()
@@ -907,19 +1131,29 @@ class SISPE:
         
         aluno_id = selecionado[0]
         aluno = self.db.get_aluno_by_id(aluno_id)
+        
+        historico = self.db.get_historico_observacoes(aluno_id)
+        texto_historico = ""
+        for data_hora, observacao in historico:
+            texto_historico += f"[{data_hora}]\n{observacao}\n{'-'*50}\n\n"
+        
         if aluno:
             detalhe_win = ctk.CTkToplevel(self.principal)
             detalhe_win.title(f"Detalhes de {aluno.nome}")
-            detalhe_win.geometry("400x350")
+            detalhe_win.geometry("400x450") 
             detalhe_win.transient(self.principal)
             
             ctk.CTkLabel(detalhe_win, text=f"Nome: {aluno.nome}", font=("Arial", 14, "bold")).pack(pady=5)
             ctk.CTkLabel(detalhe_win, text=f"Sala: {aluno.sala} | Série: {aluno.serie} | Gravidade: {aluno.gravidade}").pack(pady=5)
             
+            ctk.CTkLabel(detalhe_win, text="Histórico de Observações:", font=("Arial", 12, "bold")).pack(pady=(10, 5))
+            
             text_obs = ctk.CTkTextbox(detalhe_win, wrap="word")
             text_obs.pack(fill="both", expand=True, padx=10, pady=10)
-            text_obs.insert("1.0", aluno.observacoes or "Nenhuma observação registrada.")
+            
+            text_obs.insert("1.0", texto_historico or "Nenhuma observação registrada.")
             text_obs.configure(state="disabled")
+
 
     def atualizar_alunos_pai(self):
         if self.user_type != "pai": return
@@ -941,6 +1175,95 @@ class SISPE:
         else:
             messagebox.showerror("Erro", "Falha ao exportar relatório.")
 
+
+    def filtrar_alunos(self, *args):
+        termo = self.termo_busca.get().strip()
+        self.sugestoes_frame.pack_forget() 
+
+        if not termo:
+            return
+
+        aluno_data = self.db.get_aluno_id_by_name(termo) 
+
+        if aluno_data:
+            aluno_id = aluno_data['id']
+            self.abrir_tela_observacoes(aluno_id) 
+        else:
+            nomes_encontrados = self.db.get_aluno_by_name(termo) 
+            self.mostrar_nomes(nomes_encontrados)
+            
+    def selecionar_aluno_sugestao(self, nome_aluno):
+        self.termo_busca.set(nome_aluno)
+        self.sugestoes_frame.pack_forget()
+        self.filtrar_alunos()
+        
+    def mostrar_nomes(self, nomes):
+        # Limpa o frame de sugestões
+        for widget in self.sugestoes_frame.winfo_children():
+            widget.destroy()
+            
+        termo_atual = self.termo_busca.get()
+        
+        # Só esconde se não houver nomes OU se não houver termo na busca
+        if not nomes or not termo_atual:
+            self.sugestoes_frame.place_forget() # <-- Usamos place_forget para ser consistente
+            return
+        
+        for nome in nomes:
+            # Cria um label para cada sugestão
+            label_sugestao = ctk.CTkLabel(
+                self.sugestoes_frame, 
+                text=nome,
+                fg_color="white", 
+                text_color="black",
+                anchor="w",
+                font=("Arial", 12),
+                height=30 # Altura para melhor toque/clique
+            )
+            label_sugestao.pack(fill="x", padx=10)
+            
+            # Adiciona ação de clique: selecionar e fechar
+            label_sugestao.bind("<Button-1>", lambda event, n=nome: self.selecionar_aluno_sugestao(n))
+            
+            # Efeito de hover (fundo cinza claro)
+            label_sugestao.bind("<Enter>", lambda e: label_sugestao.configure(fg_color="#f0f0f0"))
+            label_sugestao.bind("<Leave>", lambda e: label_sugestao.configure(fg_color="white"))
+            
+        self.sugestoes_frame.pack(fill="x")
+
+    def mostrar_historico(self):
+        # 1. ESCONDE O FRAME DE NOVA OBSERVAÇÃO
+        self.nova_obs_frame.pack_forget()
+
+        # 2. CARREGA O HISTÓRICO (Lógica de abrir_tela_observacoes)
+        aluno_id = self.aluno_id_observacao
+        historico = self.db.get_historico_observacoes(aluno_id)
+        texto_formatado = ""
+            
+        for data_hora, observacao in historico:
+            texto_formatado += f"[{data_hora}]\n{observacao}\n{'-'*50}\n"
+            
+        self.texto_historico.configure(state="normal")
+        self.texto_historico.delete("1.0", ctk.END)
+        self.texto_historico.insert("1.0", texto_formatado if historico else "Nenhuma observação registrada ainda.")
+        self.texto_historico.configure(state="disabled")
+
+        # 3. MOSTRA O FRAME DO HISTÓRICO
+        self.historico_frame.pack(fill="both", expand=True, padx=20, pady=20)
+        
+        # 4. Atualiza o texto do botão principal de alternar
+        self.botao_alternar_historico.configure(text="Voltar para Nova Observação", command=self.esconder_historico)
+
+    def esconder_historico(self):
+        # 1. ESCONDE O FRAME DO HISTÓRICO
+        self.historico_frame.pack_forget()
+        
+        # 2. MOSTRA O FRAME DE NOVA OBSERVAÇÃO
+        self.nova_obs_frame.pack(pady=10)
+        
+        # 3. Atualiza o texto do botão principal de alternar
+        self.botao_alternar_historico.configure(text="Ver Histórico Completo", command=self.mostrar_historico)
+
     def excluir_conta(self):
         if messagebox.askyesno("Confirmação", "Excluir este usuário também removerá todos os dados relacionados. Deseja continuar?"):
             self.db.delete_user(self.usuario_logado)
@@ -954,6 +1277,3 @@ if __name__ == "__main__":
     root = ctk.CTk()
     app = SISPE(root)
     root.mainloop()
-    app = SISPE(root)
-    root.mainloop()
-
