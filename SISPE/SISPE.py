@@ -8,6 +8,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import openpyxl
 import datetime
+from PIL import Image
 
 class Aluno:
     def __init__(self, nome, sala, serie, gravidade, id=None, observacoes=''):
@@ -225,12 +226,12 @@ class DatabaseManager:
         if not aluno:
             return None
 
-        historico = self.get_historico_observacoes(aluno_id)
+        historico_completo = self.get_historico_observacoes(aluno_id)
         
         texto_formatado = ""
-        if historico:
-            for data_hora, observacao in historico:
-                texto_formatado += f"[{data_hora}]\n{observacao}\n{'-'*50}\n\n"
+        if historico_completo:
+            data_hora, observacao = historico_completo[0] 
+            texto_formatado = f"Último Registro: [{data_hora}]\n\n{observacao}\n"
         else:
             texto_formatado = "Nenhuma observação registrada."
             
@@ -245,9 +246,7 @@ class DatabaseManager:
         c.drawString(50, altura - 50, "Relatório do Aluno")
 
         c.setFont("Helvetica", 12)
-        
-        y = altura - 100 
-
+        y = altura - 100
         c.drawString(50, y, f"ID: {aluno.id}")
         c.drawString(50, y - 20, f"Nome: {aluno.nome}")
         c.drawString(50, y - 40, f"Sala: {aluno.sala}")
@@ -282,11 +281,10 @@ class DatabaseManager:
                         if quebra != linha:
                             linha = linha[len(quebra):].lstrip()
                         else:
-                            linha = "" # A linha cabe inteira
+                            linha = ""
 
                     textobject.textLine(quebra)
                     
-                    # Verifica se precisa de nova página
                     if textobject.getY() < 50:
                         c.drawText(textobject)
                         c.showPage()
@@ -294,11 +292,10 @@ class DatabaseManager:
                         textobject.setFont("Helvetica", 10)
                         
                 else:
-                    # A linha cabe inteira
                     textobject.textLine(pedaço)
                     linha = ""
                     
-        c.drawText(textobject) # Desenha o texto restante
+        c.drawText(textobject)
 
         c.save()
         return arquivo
@@ -900,11 +897,32 @@ class SISPE:
             for widget in self.conteudo_frame.winfo_children():
                 widget.pack_forget()
 
-            self.label_bem_vindo.pack(pady=(100, 20)) 
+            caminho_imagem = os.path.join(os.path.dirname(__file__), "tela inicio.jpg")
+            self.img_original_inicio = Image.open(caminho_imagem)
+            largura_inicial = self.conteudo_frame.winfo_width() or 900
+            altura_inicial = self.conteudo_frame.winfo_height() or 600
+            imagem_redimensionada = self.img_original_inicio.resize((largura_inicial, altura_inicial), Image.LANCZOS)
+            self.imagem_fundo_inicio = ctk.CTkImage(light_image=imagem_redimensionada, size=(largura_inicial, altura_inicial))
+
+            self.label_fundo_inicio = ctk.CTkLabel(self.conteudo_frame, image=self.imagem_fundo_inicio, text="")
+            self.label_fundo_inicio.place(x=0, y=0, relwidth=1, relheight=1)
+
+            def redimensionar_fundo(event):
+                largura = event.width
+                altura = event.height
+                imagem_redimensionada = self.img_original_inicio.resize((largura, altura), Image.LANCZOS)
+                self.imagem_fundo_inicio = ctk.CTkImage(light_image=imagem_redimensionada, size=(largura, altura))
+                self.label_fundo_inicio.configure(image=self.imagem_fundo_inicio)
+
+            self.conteudo_frame.bind("<Configure>", redimensionar_fundo)
+
+            self.label_bem_vindo.pack(pady=(100, 20))
+            self.label_bem_vindo.lift()
         
             if self.user_type == 'psicologa':
                 self.pesquisa_container.pack(pady=(0, 20), padx=10)
                 self.entry_pesquisa.pack(pady=(0, 0))
+                self.pesquisa_container.lift()
             else:
                 self.pesquisa_container.pack_forget()
                 self.entry_pesquisa.pack_forget()
@@ -932,7 +950,7 @@ class SISPE:
             # Atualiza as listas de psicólogas e pais
             self.combo_psicologas.configure(values=self.db.get_psicologas())
             self.combo_pais.configure(values=self.db.get_pais())
-            
+
     def ir_perfil(self):
         self.mostrar_frame('perfil')
 
