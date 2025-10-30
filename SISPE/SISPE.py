@@ -8,7 +8,7 @@ from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 import openpyxl
 import datetime
-from PIL import Image
+from PIL import Image, ImageTk, ImageOps
 
 class Aluno:
     def __init__(self, nome, sala, serie, gravidade, id=None, observacoes=''):
@@ -373,7 +373,6 @@ class SISPE:
 
                     self.campo_usuario_login.delete(0, ctk.END)
                     self.campo_senha_login.delete(0, ctk.END)
-                    self.label_bem_vindo.configure(text=f"Bem-vindo, {self.usuario_logado}!")
 
                     self.configurar_interface_por_tipo()
                     
@@ -504,6 +503,42 @@ class SISPE:
         elif self.user_type == 'pai':
             self.botao_ver_alunos.pack(padx=10, side=ctk.LEFT)
 
+    def carregar_imagem_fundo(self, frame, caminho_imagem):
+        if not os.path.exists(caminho_imagem):
+            print(f"⚠️ Imagem não encontrada: {caminho_imagem}")
+            return
+
+        # Abre e converte para RGB (sem transparência)
+        img_original = Image.open(caminho_imagem).convert("RGB")
+
+        # Cria o label de fundo
+        label_fundo = ctk.CTkLabel(frame, text="", corner_radius=0)
+        label_fundo.place(x=0, y=0, relwidth=1, relheight=1)
+
+        def atualizar_tamanho(_=None):
+            largura = frame.winfo_width()
+            altura = frame.winfo_height()
+
+            if largura <= 1 or altura <= 1:
+                frame.after(100, atualizar_tamanho)
+                return
+
+            # Redimensiona cortando proporcionalmente para preencher
+            imagem_redimensionada = ImageOps.fit(
+                img_original,
+                (largura, altura),
+                Image.Resampling.LANCZOS
+            )
+            
+            imagem_tk = ImageTk.PhotoImage(imagem_redimensionada)
+
+            label_fundo.configure(image=imagem_tk)
+            label_fundo.image = imagem_tk  # Mantém referência para não sumir
+
+        # Atualiza sempre que o frame for redimensionado
+        frame.bind("<Configure>", atualizar_tamanho)
+        atualizar_tamanho()
+
     def criar_tela_principal(self):
         frame_principal = ctk.CTkFrame(self.principal)
         self.frames["principal"] = frame_principal
@@ -567,7 +602,7 @@ class SISPE:
             width=100, height=35
         )
         self.botao_perfil.pack(padx=10, pady=10, side=ctk.LEFT)
-        self.aplicar_efeito_hover(self.botao_perfil)
+        self.aplicar_efeito_hover(self.botao_perfil, cor_hover= "#FF0000")
 
         # Botão Sair
         self.botao_sair = ctk.CTkButton(
@@ -580,14 +615,15 @@ class SISPE:
         self.aplicar_efeito_hover(self.botao_sair, cor_hover= "#FF0000")
 
         # Área de conteúdo
-        self.conteudo_frame = ctk.CTkFrame(frame_principal, fg_color="transparent")
-        self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=10, pady=10)
+        self.conteudo_frame = ctk.CTkFrame(frame_principal, fg_color="transparent", corner_radius=0)
+        self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=0, pady=0)
 
-        self.label_bem_vindo = ctk.CTkLabel(self.conteudo_frame, text="", font=("Arial", 20))
-        self.label_bem_vindo.pack(pady=20)
+        # === Fundo com imagem redimensionável ===
+        caminho_imagem = os.path.join(os.path.dirname(__file__), "tela_inicio.jpg")
+        self.carregar_imagem_fundo(self.conteudo_frame, caminho_imagem)
 
         self.pesquisa_container = ctk.CTkFrame(self.conteudo_frame, fg_color="transparent")
-        
+
         self.entry_pesquisa = ctk.CTkEntry(
             self.pesquisa_container,
             placeholder_text="Pesquisar por nome do aluno...",
@@ -596,7 +632,7 @@ class SISPE:
             height=40, 
             fg_color="white",
             text_color="black",
-            border_color="#d3d3d3",
+            border_color="white",
             border_width=1,
             corner_radius=20 
         )
@@ -892,37 +928,14 @@ class SISPE:
         elif nome_do_frame == "principal":
             self.frames["principal"].pack(fill="both", expand=True)
             self.menu_frame.pack(side="top", fill="x") # Mostra o menu
-            self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=10, pady=10)
+            self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=0, pady=0)
         
             for widget in self.conteudo_frame.winfo_children():
                 widget.pack_forget()
-
-            caminho_imagem = os.path.join(os.path.dirname(__file__), "tela inicio.jpg")
-            self.img_original_inicio = Image.open(caminho_imagem)
-            largura_inicial = self.conteudo_frame.winfo_width() or 900
-            altura_inicial = self.conteudo_frame.winfo_height() or 600
-            imagem_redimensionada = self.img_original_inicio.resize((largura_inicial, altura_inicial), Image.LANCZOS)
-            self.imagem_fundo_inicio = ctk.CTkImage(light_image=imagem_redimensionada, size=(largura_inicial, altura_inicial))
-
-            self.label_fundo_inicio = ctk.CTkLabel(self.conteudo_frame, image=self.imagem_fundo_inicio, text="")
-            self.label_fundo_inicio.place(x=0, y=0, relwidth=1, relheight=1)
-
-            def redimensionar_fundo(event):
-                largura = event.width
-                altura = event.height
-                imagem_redimensionada = self.img_original_inicio.resize((largura, altura), Image.LANCZOS)
-                self.imagem_fundo_inicio = ctk.CTkImage(light_image=imagem_redimensionada, size=(largura, altura))
-                self.label_fundo_inicio.configure(image=self.imagem_fundo_inicio)
-
-            self.conteudo_frame.bind("<Configure>", redimensionar_fundo)
-
-            self.label_bem_vindo.pack(pady=(100, 20))
-            self.label_bem_vindo.lift()
         
             if self.user_type == 'psicologa':
                 self.pesquisa_container.pack(pady=(0, 20), padx=10)
                 self.entry_pesquisa.pack(pady=(0, 0))
-                self.pesquisa_container.lift()
             else:
                 self.pesquisa_container.pack_forget()
                 self.entry_pesquisa.pack_forget()
@@ -933,8 +946,7 @@ class SISPE:
             # Garante que a estrutura principal está visível
             self.frames["principal"].pack(fill="both", expand=True)
             self.menu_frame.pack(side="top", fill="x")
-            self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=10, pady=10)
-
+            self.conteudo_frame.pack(side="bottom", expand=True, fill="both", padx=0, pady=0)
             # Limpa o frame de conteúdo antes de mostrar o novo frame
             for widget in self.conteudo_frame.winfo_children():
                 widget.pack_forget()
@@ -950,7 +962,7 @@ class SISPE:
             # Atualiza as listas de psicólogas e pais
             self.combo_psicologas.configure(values=self.db.get_psicologas())
             self.combo_pais.configure(values=self.db.get_pais())
-
+            
     def ir_perfil(self):
         self.mostrar_frame('perfil')
 
