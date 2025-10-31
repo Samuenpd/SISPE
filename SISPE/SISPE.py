@@ -586,7 +586,7 @@ class SISPE:
         self.aplicar_efeito_hover(self.botao_vinculo)
 
         self.botao_ver_alunos = ctk.CTkButton(
-            self.menu_frame, text="Meus Filhos",
+            self.menu_frame, text="Meus Dependes",
             fg_color="transparent", hover=False,
             command=lambda: [self.atualizar_alunos_pai(), self.mostrar_frame("ver_alunos")],
             width=120, height=35
@@ -643,8 +643,8 @@ class SISPE:
             self.pesquisa_container,
             fg_color="white",
             border_width=1,
+            border_color="white",
             width=500,
-            border_color="#d3d3d3",
             corner_radius=10 
         )
         self.sugestoes_frame.pack_forget()
@@ -660,7 +660,8 @@ class SISPE:
 
         style.configure("Treeview", 
                         background=bg_color, 
-                        foreground=text_color, 
+                        foreground=text_color,
+                        font=('Arial', 12),
                         fieldbackground=bg_color, 
                         borderwidth=0)
         
@@ -674,7 +675,7 @@ class SISPE:
                         background=header_bg_color, 
                         foreground=text_color, 
                         relief="flat", 
-                        font=('Arial', 10, 'bold'))
+                        font=('Arial', 14, 'bold'))
         
         # Efeito de hover para o cabeçalho
         style.map("Treeview.Heading", background=[('active', selected_color)])
@@ -901,7 +902,7 @@ class SISPE:
         self.frames["ver_alunos"] = frame_ver_alunos
         frame_ver_alunos.pack(fill="both", expand=True, padx=20, pady=20)
 
-        ctk.CTkLabel(frame_ver_alunos, text="Meus Filhos", font=("Arial", 16, "bold")).pack(pady=10)
+        ctk.CTkLabel(frame_ver_alunos, text="Meus Dependentes", font=("Arial", 16, "bold")).pack(pady=10)
         
         tree_frame = ctk.CTkFrame(frame_ver_alunos)
         tree_frame.pack(fill="both", expand=True, pady=10)
