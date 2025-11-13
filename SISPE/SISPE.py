@@ -720,65 +720,64 @@ class SISPE:
         ).pack(pady=25)
 
     def criar_tela_registro(self):
-        self.configurar_estilo_treeview()
-        frame_registro = ctk.CTkFrame(self.conteudo_frame, fg_color="transparent")
-        self.frames["registro"] = frame_registro
-        
-        # Frame do formulário
-        form_frame = ctk.CTkFrame(frame_registro)
-        form_frame.pack(pady=10, padx=10, fill="x")
+    	self.configurar_estilo_treeview()
+    	frame_registro = ctk.CTkFrame(self.conteudo_frame, fg_color="transparent")
+    	self.frames["registro"] = frame_registro
 
-        ctk.CTkLabel(form_frame, text='Registro de Aluno', font=("Arial", 16, "bold")).grid(row=0, column=0, columnspan=4, pady=10)
+    	caminho_imagem_registro = os.path.join(os.path.dirname(__file__), "tela_registrar.jpeg")
+    	self.carregar_imagem_fundo(frame_registro, caminho_imagem_registro)
 
-        ctk.CTkLabel(form_frame, text="Nome:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
-        self.entry_nome = ctk.CTkEntry(form_frame)
-        self.entry_nome.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
+    	form_frame = ctk.CTkFrame(frame_registro, fg_color="transparent", corner_radius=20)
+    	form_frame.pack(pady=10, padx=10, fill="x")
 
-        ctk.CTkLabel(form_frame, text="Sala:").grid(row=1, column=2, padx=10, pady=5, sticky="w")
-        self.entry_sala = ctk.CTkEntry(form_frame, width=80)
-        self.entry_sala.grid(row=1, column=3, padx=10, pady=5)
+    	ctk.CTkLabel(form_frame, text='Registro de Aluno', font=("Arial", 18, "bold"), text_color="#1E3A8A").grid(
+			row=0, column=0, columnspan=4, pady=10
+		)
 
-        ctk.CTkLabel(form_frame, text="Série:").grid(row=2, column=0, padx=10, pady=5, sticky="w")
-        self.entry_serie = ctk.CTkEntry(form_frame, width=80)
-        self.entry_serie.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+    	ctk.CTkLabel(form_frame, text="Nome:", text_color="black").grid(row=1, column=0, padx=10, pady=5, sticky="w")
+    	self.entry_nome = ctk.CTkEntry(form_frame, fg_color="white", text_color="black")
+    	self.entry_nome.grid(row=1, column=1, padx=10, pady=5, sticky="ew")
 
-        ctk.CTkLabel(form_frame, text="Nível de Gravidade:").grid(row=2, column=2, padx=10, pady=5, sticky="w")
-        self.gravidade_combo = ctk.CTkComboBox(form_frame, values=["Baixo", "Médio", "Alto"], state='readonly')
-        self.gravidade_combo.grid(row=2, column=3, padx=10, pady=5, sticky="ew")
-        
-        form_frame.grid_columnconfigure(1, weight=1)
+    	ctk.CTkLabel(form_frame, text="Sala:", text_color="black").grid(row=1, column=2, padx=10, pady=5, sticky="w")
+    	self.entry_sala = ctk.CTkEntry(form_frame, fg_color="white", text_color="black", width=80)
+    	self.entry_sala.grid(row=1, column=3, padx=10, pady=5)
 
-        # Botões do formulário
-        botoes_form_frame = ctk.CTkFrame(frame_registro, fg_color="transparent")
-        botoes_form_frame.pack(pady=5)
-        ctk.CTkButton(botoes_form_frame, text="Salvar", command=self.salvar_aluno).pack(side="left", padx=10)
+    	ctk.CTkLabel(form_frame, text="Série:", text_color="black").grid(row=2, column=0, padx=10, pady=5, sticky="w")
+    	self.entry_serie = ctk.CTkEntry(form_frame, fg_color="white", text_color="black", width=80)
+    	self.entry_serie.grid(row=2, column=1, padx=10, pady=5, sticky="w")
 
-        # Frame da lista (Treeview)
-        list_frame = ctk.CTkFrame(frame_registro)
-        list_frame.pack(pady=10, padx=10, fill="both", expand=True)
+    	ctk.CTkLabel(form_frame, text="Nível de Gravidade:", text_color="black").grid(row=2, column=2, padx=10, pady=5, sticky="w")
+    	self.gravidade_combo = ctk.CTkComboBox(form_frame, values=["Baixo", "Médio", "Alto"], state='readonly')
+    	self.gravidade_combo.grid(row=2, column=3, padx=10, pady=5, sticky="ew")
+    	form_frame.grid_columnconfigure(1, weight=1)
 
-        self.tree_alunos = ttk.Treeview(list_frame, columns=("Nome", "Sala", "Série", "Gravidade"), show="headings")
-        self.tree_alunos.heading("Nome", text="Nome")
-        self.tree_alunos.heading("Sala", text="Sala")
-        self.tree_alunos.heading("Série", text="Série")
-        self.tree_alunos.heading("Gravidade", text="Gravidade")
-        
-        self.tree_alunos.column("Nome", width=250)
-        self.tree_alunos.column("Sala", width=50, anchor=ctk.CENTER)
-        self.tree_alunos.column("Série", width=50, anchor=ctk.CENTER)
-        self.tree_alunos.column("Gravidade", width=100)
-        
-        scrollbar = ttk.Scrollbar(list_frame, orient=ctk.VERTICAL, command=self.tree_alunos.yview)
-        self.tree_alunos.configure(yscrollcommand=scrollbar.set)
-        
-        scrollbar.pack(side=ctk.RIGHT, fill=ctk.Y)
-        self.tree_alunos.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
-        self.tree_alunos.bind("<Double-1>", self.abrir_tela_observacoes)
-        
-        botoes_acao_frame = ctk.CTkFrame(frame_registro, fg_color="transparent")
-        botoes_acao_frame.pack(pady=5)
-        ctk.CTkButton(botoes_acao_frame, text='Editar', command=self.editar_aluno).pack(side='left', padx=5)
-        ctk.CTkButton(botoes_acao_frame, text='Excluir', command=self.excluir_aluno).pack(side='left', padx=5)
+    	botoes_form_frame = ctk.CTkFrame(frame_registro, fg_color="transparent")
+    	botoes_form_frame.pack(pady=5)
+    	ctk.CTkButton(botoes_form_frame, text="Salvar", fg_color="#2563EB", hover_color="#1E40AF", command=self.salvar_aluno).pack(side="left", padx=10)
+
+    	list_frame = ctk.CTkFrame(frame_registro, fg_color="transparent")
+    	list_frame.pack(pady=10, padx=10, fill="both", expand=True)
+
+    	self.tree_alunos = ttk.Treeview(list_frame, columns=("Nome", "Sala", "Série", "Gravidade"), show="headings")
+    	self.tree_alunos.heading("Nome", text="Nome")
+    	self.tree_alunos.heading("Sala", text="Sala")
+    	self.tree_alunos.heading("Série", text="Série")
+    	self.tree_alunos.heading("Gravidade", text="Gravidade")
+    	self.tree_alunos.column("Nome", width=250)
+    	self.tree_alunos.column("Sala", width=50, anchor=ctk.CENTER)
+    	self.tree_alunos.column("Série", width=50, anchor=ctk.CENTER)
+    	self.tree_alunos.column("Gravidade", width=100)
+
+    	scrollbar = ttk.Scrollbar(list_frame, orient=ctk.VERTICAL, command=self.tree_alunos.yview)
+    	self.tree_alunos.configure(yscrollcommand=scrollbar.set)
+    	scrollbar.pack(side=ctk.RIGHT, fill=ctk.Y)
+    	self.tree_alunos.pack(side=ctk.LEFT, fill=ctk.BOTH, expand=True)
+    	self.tree_alunos.bind("<Double-1>", self.abrir_tela_observacoes)
+
+    	botoes_acao_frame = ctk.CTkFrame(frame_registro, fg_color="transparent")
+    	botoes_acao_frame.pack(pady=10)
+    	ctk.CTkButton(botoes_acao_frame, text='Editar', fg_color="#2563EB", hover_color="#1E40AF", command=self.editar_aluno).pack(side='left', padx=5)
+    	ctk.CTkButton(botoes_acao_frame, text='Excluir', fg_color="#D32F2F", hover_color="#B71C1C", bg_color= "transparent", command=self.excluir_aluno).pack(side='left', padx=5)
 
     def criar_tela_perfil(self):
         frame_perfil = ctk.CTkFrame(self.conteudo_frame)
