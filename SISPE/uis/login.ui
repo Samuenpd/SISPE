@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1265</width>
+    <height>753</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Login - SISPE</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QMainWindow {
+     background-color: #F0EAD6;
+     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+   }</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
+     <number>0</number>
+    </property>
+    <property name="spacing">
+     <number>0</number>
+    </property>
+    <item row="0" column="0">
+     <widget class="QFrame" name="cardLogin">
+      <property name="minimumSize">
+       <size>
+        <width>440</width>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>440</width>
+        <height>460</height>
+       </size>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">#cardLogin {
+         background: #FAF9F6;
+         border: 1px solid #A3C1AD;
+         border-radius: 20px;
+       }</string>
+      </property>
+      <widget class="QLabel" name="labelTitulo">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>70</y>
+         <width>145</width>
+         <height>38</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLabel {
+            color: #2C3E40;
+            font-size: 28px;
+            font-weight: 700;
+          }</string>
+       </property>
+       <property name="text">
+        <string>Bem-vindo</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="inputUsuario">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>148</y>
+         <width>361</width>
+         <height>54</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit {
+            border: 2px solid #A3C1AD;
+            border-radius: 10px;
+            padding: 14px 18px;
+            background-color: #FFFFFF;
+            color: #2C3E40;
+            font-size: 15px;
+          }
+          QLineEdit:focus {
+            border: 2px solid #4A7C92;
+            background-color: #FAF9F6;
+          }
+          QLineEdit::placeholder {
+            color: #95A5A6;
+          }</string>
+       </property>
+       <property name="placeholderText">
+        <string>Usuário</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="bntContinuar">
+       <property name="geometry">
+        <rect>
+         <x>140</x>
+         <y>370</y>
+         <width>131</width>
+         <height>51</height>
+        </rect>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+            background-color: #4A7C92;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 14px;
+          }
+          QPushButton:hover {
+            background-color: #5E8FA3;
+          }
+          QPushButton:pressed {
+            background-color: #3B6270;
+          }</string>
+       </property>
+       <property name="text">
+        <string>Entrar</string>
+       </property>
+      </widget>
+      <widget class="QLineEdit" name="InputSenha">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>274</y>
+         <width>361</width>
+         <height>54</height>
+        </rect>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QLineEdit {
+              border: 2px solid #A3C1AD;
+              border-radius: 10px;
+              padding: 14px 18px;
+              background-color: #FFFFFF;
+              color: #2C3E40;
+              font-size: 15px;
+            }
+            QLineEdit:focus {
+              border: 2px solid #4A7C92;
+              background-color: #FAF9F6;
+            }
+            QLineEdit::placeholder {
+              color: #95A5A6;
+            }</string>
+       </property>
+       <property name="echoMode">
+        <enum>QLineEdit::EchoMode::Password</enum>
+       </property>
+       <property name="placeholderText">
+        <string>Senha</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="btnVerSenha">
+       <property name="geometry">
+        <rect>
+         <x>380</x>
+         <y>280</y>
+         <width>48</width>
+         <height>48</height>
+        </rect>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>48</width>
+         <height>48</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton {
+              border: none;
+              background: transparent;
+              color: #6B7B7D;
+              font-size: 20px;
+              padding: 0px;
+            }
+            QPushButton:hover {
+              color: #4A7C92;
+              background: transparent;
+            }</string>
+       </property>
+       <property name="text">
+        <string>🔒</string>
+       </property>
+      </widget>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
