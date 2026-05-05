@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RelatorioDialog</class>
+ <widget class="QDialog" name="RelatorioDialog">
+  <property name="windowTitle">
+   <string>Relatórios</string>
+  </property>
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>500</width><height>400</height></rect>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog { background: #f0f4f8; }</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>12</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="labelAluno">
+     <property name="text"><string>Aluno: </string></property>
+     <property name="styleSheet">
+      <string notr="true">font-weight: bold; font-size: 16px;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QListWidget" name="listaRelatorios"/>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="textNovoRelatorio">
+     <property name="placeholderText">
+      <string>Escreva um novo relatório...</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QPushButton" name="btnSalvarRelatorio">
+     <property name="text"><string>Salvar Relatório</string></property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+</ui>

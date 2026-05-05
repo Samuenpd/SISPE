@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>PaiScreen</class>
+ <widget class="QWidget" name="PaiScreen">
+  <property name="styleSheet">
+   <string notr="true">#PaiScreen { background-color: #f0f4f8; }</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>16</number>
+   </property>
+   <property name="leftMargin">
+    <number>24</number>
+   </property>
+   <property name="topMargin">
+    <number>24</number>
+   </property>
+   <property name="rightMargin">
+    <number>24</number>
+   </property>
+   <property name="bottomMargin">
+    <number>24</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="labelTitulo">
+     <property name="text">
+      <string>Meus Filhos</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">font-size: 18px; font-weight: bold; color: #1e293b;</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTableWidget" name="tabelaFilhos">
+     <property name="columnCount">
+      <number>2</number>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">(estilo padrão)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QTextEdit" name="textRelatorios">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+     <property name="placeholderText">
+      <string>Selecione um aluno para ver os relatórios...</string>
+     </property>
+     <property name="styleSheet">
+      <string notr="true">QTextEdit {
+    background: white;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    padding: 12px;
+    font-size: 14px;
+}</string>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+</ui>

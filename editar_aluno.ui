@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>EditarAlunoDialog</class>
+ <widget class="QDialog" name="EditarAlunoDialog">
+  <property name="windowTitle">
+   <string>Editar Aluno</string>
+  </property>
+  <property name="geometry">
+   <rect><x>0</x><y>0</y><width>400</width><height>300</height></rect>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog { background: #f0f4f8; }</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>12</number>
+   </property>
+   <property name="leftMargin">
+    <number>20</number>
+   </property>
+   <property name="topMargin">
+    <number>20</number>
+   </property>
+   <property name="rightMargin">
+    <number>20</number>
+   </property>
+   <property name="bottomMargin">
+    <number>20</number>
+   </property>
+   <item>
+    <widget class="QLineEdit" name="inputNome"/>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="inputSala"/>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="inputSerie"/>
+   </item>
+   <item>
+    <widget class="QComboBox" name="comboGravidade">
+     <item><string>baixo</string></item>
+     <item><string>medio</string></item>
+     <item><string>grave</string></item>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayoutBotoes">
+     <item>
+      <widget class="QPushButton" name="btnSalvar">
+       <property name="text"><string>Salvar</string></property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnRelatorios">
+       <property name="text"><string>Abrir Relatórios</string></property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+</ui>
