@@ -4,6 +4,9 @@ from screens.home import HomeScreen
 from screens.psicologo import PsicologoScreen
 from screens.admin import AdminScreen
 from screens.pai import PaiScreen
+from screens.vincular import VincularScreen
+from screens.editar_aluno import EditarAlunoScreen
+from screens.historico_relatorios import HistoricoRelatoriosScreen
 
 class MainApp(QMainWindow):
     def __init__(self, db, app):
@@ -27,21 +30,47 @@ class MainApp(QMainWindow):
 
         # Telas
         self.home = HomeScreen()
-        self.psico = PsicologoScreen(db, app)
+        self.psico = PsicologoScreen(db, app, self)
         self.admin = AdminScreen(db)
         self.pai = PaiScreen(db, app)
+        self.vincular = VincularScreen(db)
+        self.editar_aluno = EditarAlunoScreen(db, self)
+        self.historico = HistoricoRelatoriosScreen(db, self)
 
         self.stackedWidget.addWidget(self.home)
         self.stackedWidget.addWidget(self.psico)
         self.stackedWidget.addWidget(self.admin)
         self.stackedWidget.addWidget(self.pai)
+        self.stackedWidget.addWidget(self.vincular)
+        self.stackedWidget.addWidget(self.editar_aluno)
+        self.stackedWidget.addWidget(self.historico)
 
         # Conexões da barra
         self.bnthome.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.home))
-        self.bntvincular.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.admin))
+        self.bntvincular.clicked.connect(self.abrir_vincular)
         self.btngerenusua.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.admin))
         self.btnRegistrarAluno.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.psico))
         self.bntsair.clicked.connect(self.logout)
+
+    # ---------- Navegação entre telas internas ----------
+    def abrir_vincular(self):
+        self.vincular.atualizar()
+        self.stackedWidget.setCurrentWidget(self.vincular)
+
+    def abrir_editar_aluno(self, aluno_id, nome, sala, serie, gravidade):
+        self.editar_aluno.carregar(aluno_id, nome, sala, serie, gravidade)
+        self.stackedWidget.setCurrentWidget(self.editar_aluno)
+
+    def abrir_historico(self, aluno_id, nome):
+        self.historico.carregar(aluno_id, nome)
+        self.stackedWidget.setCurrentWidget(self.historico)
+
+    def voltar_para_psico(self):
+        self.psico.atualizar()
+        self.stackedWidget.setCurrentWidget(self.psico)
+
+    def voltar_para_editar_aluno(self):
+        self.stackedWidget.setCurrentWidget(self.editar_aluno)
 
     def carregar_usuario(self, user):
         tipo = user["tipo"]
@@ -50,6 +79,7 @@ class MainApp(QMainWindow):
         self.btngerenusua.hide()
         if tipo == "admin":
             self.btngerenusua.show()
+            self.bntvincular.show()
             self.admin.atualizar()
         elif tipo == "psicologo":
             self.btnRegistrarAluno.show()

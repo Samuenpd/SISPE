@@ -1,6 +1,7 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QDialog
 
+
 class RelatorioScreen(QDialog):
     def __init__(self, db, app, aluno_id, nome):
         super().__init__()

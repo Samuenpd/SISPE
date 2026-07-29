@@ -1,54 +1,53 @@
-from PyQt6.QtWidgets import (
-    QWidget, QVBoxLayout, QTableWidget,
-    QTableWidgetItem, QTextEdit
-)
+from PyQt6 import uic
+from PyQt6.QtWidgets import QWidget, QTableWidgetItem, QHeaderView
+
 
 class PaiScreen(QWidget):
     def __init__(self, db, app):
         super().__init__()
+        uic.loadUi("uis/pai.ui", self)
+
         self.db = db
         self.app = app
 
-        layout = QVBoxLayout()
+        # Configuração da tabela de filhos (o widget vem do pai.ui, ajustes aqui)
+        self.tabelaFilhos.setColumnCount(2)
+        self.tabelaFilhos.setHorizontalHeaderLabels(["ID", "Nome"])
+        self.tabelaFilhos.setEditTriggers(self.tabelaFilhos.EditTrigger.NoEditTriggers)
+        self.tabelaFilhos.setSelectionBehavior(self.tabelaFilhos.SelectionBehavior.SelectRows)
+        header = self.tabelaFilhos.horizontalHeader()
+        header.setSectionResizeMode(0, QHeaderView.ResizeMode.ResizeToContents)
+        header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
 
-        self.table = QTableWidget()
-        self.table.setColumnCount(2)
-        self.table.setHorizontalHeaderLabels(["ID", "Nome"])
-        self.table.cellClicked.connect(self.carregar_relatorios)
-
-        self.relatorios = QTextEdit()
-        self.relatorios.setReadOnly(True)
-
-        layout.addWidget(self.table)
-        layout.addWidget(self.relatorios)
-
-        self.setLayout(layout)
+        self.tabelaFilhos.cellClicked.connect(self.carregar_relatorios)
 
     def atualizar(self):
+        """Recarrega a lista de filhos do pai logado."""
         if not self.app.usuario_logado:
             return
 
         dados = self.db.alunos_do_pai(self.app.usuario_logado["id"])
-        self.table.setRowCount(len(dados))
+        self.tabelaFilhos.setRowCount(len(dados))
 
         for i, (id_, nome) in enumerate(dados):
-            self.table.setItem(i, 0, QTableWidgetItem(str(id_)))
-            self.table.setItem(i, 1, QTableWidgetItem(nome))
+            self.tabelaFilhos.setItem(i, 0, QTableWidgetItem(str(id_)))
+            self.tabelaFilhos.setItem(i, 1, QTableWidgetItem(nome))
 
-    def load(self):
-        dados = self.db.alunos_do_pai(self.app.usuario_logado["id"])
-        self.table.setRowCount(len(dados))
+        self.textRelatorios.clear()
 
-        for i, (id_, nome) in enumerate(dados):
-            self.table.setItem(i, 0, QTableWidgetItem(str(id_)))
-            self.table.setItem(i, 1, QTableWidgetItem(nome))
-
-    def carregar_relatorios(self, row):
-        aluno_id = int(self.table.item(row, 0).text())
+    def carregar_relatorios(self, row, _column=0):
+        item = self.tabelaFilhos.item(row, 0)
+        if not item:
+            return
+        aluno_id = int(item.text())
         rels = self.db.listar_relatorios_aluno(aluno_id)
 
-        texto = ""
-        for r in rels:
-            texto += f"{r[1]}\\n{r[0]}\\n\\n"
+        if not rels:
+            self.textRelatorios.setText("Nenhum relatório registrado para este aluno ainda.")
+            return
 
-        self.relatorios.setText(texto)
+        texto = ""
+        for conteudo, data in rels:
+            texto += f"📅 {data}\n{conteudo}\n\n"
+
+        self.textRelatorios.setText(texto)

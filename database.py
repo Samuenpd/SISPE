@@ -24,8 +24,7 @@ class DatabaseManager:
             nome TEXT,
             sala TEXT,
             serie TEXT,
-            gravidade TEXT,
-            psicologo_id INTEGER
+            gravidade TEXT
         )
         """)
 
@@ -83,29 +82,25 @@ class DatabaseManager:
         return cursor.fetchone() is not None
 
     # ALUNOS (AGORA COMPLETO)
-    def adicionar_aluno(self, nome, sala, serie, gravidade, psicologo_id):
+    def adicionar_aluno(self, nome, sala, serie, gravidade):
         cursor = self.conn.cursor()
         cursor.execute(
-            "INSERT INTO alunos (nome, sala, serie, gravidade, psicologo_id) VALUES (?, ?, ?, ?, ?)",
-            (nome, sala, serie, gravidade, psicologo_id)
+            "INSERT INTO alunos (nome, sala, serie, gravidade) VALUES (?, ?, ?, ?)",
+            (nome, sala, serie, gravidade)
         )
         self.conn.commit()
 
-    def listar_alunos(self, psicologo_id):
+    def listar_alunos(self):
         cursor = self.conn.cursor()
-        cursor.execute("""
-            SELECT id, nome, sala, serie, gravidade
-            FROM alunos
-            WHERE psicologo_id=?
-        """, (psicologo_id,))
+        cursor.execute("SELECT id, nome, sala, serie, gravidade FROM alunos")
         return cursor.fetchall()
     
-    def aluno_existe(self, nome, sala, serie, psicologo_id):
+    def aluno_existe(self, nome, sala, serie):
         cursor = self.conn.cursor()
         cursor.execute("""
-            SELECT 1 FROM alunos
-            WHERE nome=? AND sala=? AND serie=? AND psicologo_id=?
-        """, (nome, sala, serie, psicologo_id))
+        SELECT 1 FROM alunos
+        WHERE nome=? AND sala=? AND serie=?
+        """, (nome, sala, serie))
         return cursor.fetchone() is not None
     
     def atualizar_aluno(self, aluno_id, nome, sala, serie, gravidade):
@@ -149,6 +144,37 @@ class DatabaseManager:
         WHERE relacao_pai_aluno.pai_id=?
         """, (pai_id,))
         return cursor.fetchall()
+
+    def listar_pais(self):
+        """Retorna (id, username) de todos os usuários do tipo 'pai'."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT id, username FROM usuarios WHERE tipo='pai' ORDER BY username")
+        return cursor.fetchall()
+
+    def vinculo_existe(self, pai_id, aluno_id):
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT 1 FROM relacao_pai_aluno WHERE pai_id=? AND aluno_id=?",
+            (pai_id, aluno_id)
+        )
+        return cursor.fetchone() is not None
+
+    def listar_vinculos(self):
+        """Retorna (vinculo_id, pai_username, aluno_id, aluno_nome) de todos os vínculos."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+        SELECT relacao_pai_aluno.id, usuarios.username, alunos.id, alunos.nome
+        FROM relacao_pai_aluno
+        JOIN usuarios ON usuarios.id = relacao_pai_aluno.pai_id
+        JOIN alunos ON alunos.id = relacao_pai_aluno.aluno_id
+        ORDER BY usuarios.username
+        """)
+        return cursor.fetchall()
+
+    def desvincular(self, vinculo_id):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM relacao_pai_aluno WHERE id=?", (vinculo_id,))
+        self.conn.commit()
 
     # RELATÓRIOS
     def criar_relatorio(self, aluno_id, psicologo_id, texto):

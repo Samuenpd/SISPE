@@ -1,11 +1,15 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QMainWindow, QMessageBox
+from screens.utils import aplicar_sombra
 
 class LoginScreen(QMainWindow):
     def __init__(self, app, db):
         super().__init__()
 
         uic.loadUi("uis/login.ui", self)
+
+        # Sombra suave no card de login (profundidade calma, sem exagero)
+        aplicar_sombra(self.cardLogin, blur=36, y_offset=10, alpha=22)
 
         self.app = app
         self.db = db

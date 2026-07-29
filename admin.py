@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import (
     QScrollArea, QVBoxLayout
 )
 from PyQt6.QtCore import Qt
+from screens.utils import aplicar_sombra
 
 
 class AdminScreen(QWidget):
@@ -11,6 +12,10 @@ class AdminScreen(QWidget):
         super().__init__()
         # Carrega o UI original
         uic.loadUi("uis/admin.ui", self)
+
+        # Sombra suave nos cards (profundidade calma, sem exagero)
+        for card in (self.frameStats, self.frameCriarUsuario, self.frameTabela):
+            aplicar_sombra(card)
 
         self.db = db
 

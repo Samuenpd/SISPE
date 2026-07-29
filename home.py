@@ -1,10 +1,16 @@
 from PyQt6 import uic
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea
+from screens.utils import aplicar_sombra
 
 class HomeScreen(QWidget):
     def __init__(self):
         super().__init__()
         uic.loadUi("uis/home.ui", self)
+
+        # Sombra suave nos cards (profundidade calma, sem exagero)
+        for card in (self.frameSaudacao, self.frameSobre, self.frameEquipe,
+                     self.frameObjetivos, self.frameTeoria, self.frameODS):
+            aplicar_sombra(card)
 
         # Scroll area para todo o conteúdo
         self.conteudo = QWidget()

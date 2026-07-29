@@ -5,8 +5,8 @@
   <property name="styleSheet">
    <string notr="true">#PsicologoScreen { 
      background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
-     stop:0 #e8f0fe, stop:1 #f0f4f8);
-     font-family: 'Segoe UI', Arial, sans-serif;
+     stop:0 #EAF2F8, stop:1 #F6FAFC);
+     font-family: 'Segoe UI', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
    }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -25,7 +25,7 @@
      <property name="styleSheet">
       <string notr="true">QLabel {
         font-size: 24px;
-        color: #1e293b;
+        color: #2E3A46;
         margin-bottom: 8px;
         padding: 0px;
       }</string>
@@ -42,9 +42,9 @@
      <property name="styleSheet">
       <string notr="true">#frameCadastro {
         background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
-        stop:0 #ffffff, stop:1 #f8fafc);
+        stop:0 #FFFFFF, stop:1 #F5F9FC);
         border-radius: 16px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #DCE7F0;
         padding: 24px;
       }</string>
      </property>
@@ -53,25 +53,25 @@
       <item row="0" column="0">
        <widget class="QLabel" name="labelNome">
         <property name="text"><string>&lt;b&gt;Nome do Aluno&lt;/b&gt;</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { color: #475569; font-size: 13px; margin-bottom: 4px; }</string></property>
+        <property name="styleSheet"><string notr="true">QLabel { color: #5A7085; font-size: 13px; margin-bottom: 4px; }</string></property>
        </widget>
       </item>
       <item row="0" column="1">
        <widget class="QLabel" name="labelSala">
         <property name="text"><string>&lt;b&gt;Sala&lt;/b&gt;</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { color: #475569; font-size: 13px; margin-bottom: 4px; }</string></property>
+        <property name="styleSheet"><string notr="true">QLabel { color: #5A7085; font-size: 13px; margin-bottom: 4px; }</string></property>
        </widget>
       </item>
       <item row="0" column="2">
        <widget class="QLabel" name="labelSerie">
         <property name="text"><string>&lt;b&gt;Série&lt;/b&gt;</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { color: #475569; font-size: 13px; margin-bottom: 4px; }</string></property>
+        <property name="styleSheet"><string notr="true">QLabel { color: #5A7085; font-size: 13px; margin-bottom: 4px; }</string></property>
        </widget>
       </item>
       <item row="0" column="3">
        <widget class="QLabel" name="labelGravidade">
         <property name="text"><string>&lt;b&gt;Gravidade&lt;/b&gt;</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { color: #475569; font-size: 13px; margin-bottom: 4px; }</string></property>
+        <property name="styleSheet"><string notr="true">QLabel { color: #5A7085; font-size: 13px; margin-bottom: 4px; }</string></property>
        </widget>
       </item>
       <item row="1" column="0">
@@ -79,19 +79,19 @@
         <property name="placeholderText"><string>Digite o nome completo do aluno</string></property>
         <property name="styleSheet">
          <string notr="true">QLineEdit {
-           border: 2px solid #e2e8f0;
+           border: 2px solid #DCE7F0;
            border-radius: 10px;
            padding: 12px 16px;
-           background-color: #ffffff;
-           color: #1e293b;
+           background-color: #FFFFFF;
+           color: #2E3A46;
            font-size: 15px;
            min-height: 44px;
          }
          QLineEdit:focus { 
-           border: 2px solid #3b82f6; 
-           background-color: #fafbff;
+           border: 2px solid #5B84A6; 
+           background-color: #F5F9FC;
          }
-         QLineEdit::placeholder { color: #94a3b8; }</string>
+         QLineEdit::placeholder { color: #A9BAC7; }</string>
         </property>
        </widget>
       </item>
@@ -100,19 +100,19 @@
         <property name="placeholderText"><string>Ex: A101</string></property>
         <property name="styleSheet">
          <string notr="true">QLineEdit {
-           border: 2px solid #e2e8f0;
+           border: 2px solid #DCE7F0;
            border-radius: 10px;
            padding: 12px 16px;
-           background-color: #ffffff;
-           color: #1e293b;
+           background-color: #FFFFFF;
+           color: #2E3A46;
            font-size: 15px;
            min-height: 44px;
          }
          QLineEdit:focus { 
-           border: 2px solid #3b82f6; 
-           background-color: #fafbff;
+           border: 2px solid #5B84A6; 
+           background-color: #F5F9FC;
          }
-         QLineEdit::placeholder { color: #94a3b8; }</string>
+         QLineEdit::placeholder { color: #A9BAC7; }</string>
         </property>
        </widget>
       </item>
@@ -121,19 +121,19 @@
         <property name="placeholderText"><string>Ex: 9º ano</string></property>
         <property name="styleSheet">
          <string notr="true">QLineEdit {
-           border: 2px solid #e2e8f0;
+           border: 2px solid #DCE7F0;
            border-radius: 10px;
            padding: 12px 16px;
-           background-color: #ffffff;
-           color: #1e293b;
+           background-color: #FFFFFF;
+           color: #2E3A46;
            font-size: 15px;
            min-height: 44px;
          }
          QLineEdit:focus { 
-           border: 2px solid #3b82f6; 
-           background-color: #fafbff;
+           border: 2px solid #5B84A6; 
+           background-color: #F5F9FC;
          }
-         QLineEdit::placeholder { color: #94a3b8; }</string>
+         QLineEdit::placeholder { color: #A9BAC7; }</string>
         </property>
        </widget>
       </item>
@@ -143,15 +143,15 @@
          <string notr="true">QComboBox {
            padding: 12px 16px;
            border-radius: 10px;
-           border: 2px solid #e2e8f0;
-           background-color: #ffffff;
-           color: #1e293b;
+           border: 2px solid #DCE7F0;
+           background-color: #FFFFFF;
+           color: #2E3A46;
            font-size: 15px;
            min-height: 44px;
          }
          QComboBox:focus { 
-           border: 2px solid #3b82f6; 
-           background-color: #fafbff;
+           border: 2px solid #5B84A6; 
+           background-color: #F5F9FC;
          }
          QComboBox::drop-down {
            border: none;
@@ -161,13 +161,13 @@
            image: none;
            border-left: 5px solid transparent;
            border-right: 5px solid transparent;
-           border-top: 8px solid #64748b;
+           border-top: 8px solid #7C93A3;
          }
          QComboBox QAbstractItemView {
-           border: 1px solid #e2e8f0;
+           border: 1px solid #DCE7F0;
            border-radius: 8px;
            background-color: white;
-           selection-background-color: #3b82f6;
+           selection-background-color: #5B84A6;
          }</string>
         </property>
         <item><property name="text"><string>Baixo</string></property></item>
@@ -181,7 +181,7 @@
         <property name="styleSheet">
          <string notr="true">QPushButton {
            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-           stop:0 #4f46e5, stop:1 #3730a3);
+           stop:0 #5B84A6, stop:1 #3E5E79);
            color: white;
            border-radius: 12px;
            padding: 14px 28px;
@@ -193,11 +193,11 @@
          }
          QPushButton:hover { 
            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-           stop:0 #4338ca, stop:1 #312e81);
+           stop:0 #4C7191, stop:1 #2F4A60);
          }
          QPushButton:pressed { 
            background: qlineargradient(x1:0, y1:0, x2:0, y2:1, 
-           stop:0 #3730a3, stop:1 #312e81);
+           stop:0 #3E5E79, stop:1 #2F4A60);
          }</string>
         </property>
        </widget>
@@ -219,7 +219,7 @@
       <string notr="true">#frameTabela {
         background: white;
         border-radius: 16px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #DCE7F0;
       }</string>
      </property>
      <layout class="QVBoxLayout" name="layoutTabela">
@@ -233,7 +233,7 @@
         <property name="text"><string>&lt;b&gt;Lista de Alunos Cadastrados&lt;/b&gt;</string></property>
         <property name="styleSheet"><string notr="true">QLabel { 
           font-size: 18px; 
-          color: #1e293b; 
+          color: #2E3A46; 
           padding: 8px 0px;
           margin-bottom: 12px;
         }</string></property>
@@ -244,18 +244,18 @@
         <property name="placeholderText"><string>Pesquisar aluno por nome...</string></property>
         <property name="styleSheet">
          <string notr="true">QLineEdit {
-           border: 2px solid #e2e8f0;
+           border: 2px solid #DCE7F0;
            border-radius: 10px;
            padding: 12px 16px;
-           background-color: #ffffff;
-           color: #1e293b;
+           background-color: #FFFFFF;
+           color: #2E3A46;
            font-size: 15px;
            min-height: 44px;
            margin-bottom: 12px;
          }
          QLineEdit:focus { 
-           border: 2px solid #3b82f6; 
-           background-color: #fafbff;
+           border: 2px solid #5B84A6; 
+           background-color: #F5F9FC;
          }</string>
         </property>
        </widget>
@@ -278,35 +278,35 @@
         <property name="styleSheet">
          <string notr="true">QTableWidget {
            background: transparent;
-           gridline-color: #f1f5f9;
+           gridline-color: #EAF1F6;
            font-size: 14px;
            border: none;
-           selection-background-color: #dbeafe;
+           selection-background-color: #E4EEF5;
          }
          QTableWidget::item {
            padding: 12px;
-           border-bottom: 1px solid #f1f5f9;
+           border-bottom: 1px solid #EAF1F6;
          }
          QTableWidget::item:selected {
-           background-color: #3b82f6;
+           background-color: #5B84A6;
            color: white;
          }
          QHeaderView::section {
            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-           stop:0 #f8fafc, stop:1 #e2e8f0);
+           stop:0 #F5F9FC, stop:1 #DCE7F0);
            padding: 16px 12px;
            border: none;
            font-weight: 600;
            font-size: 14px;
-           color: #374151;
-           border-bottom: 2px solid #e2e8f0;
+           color: #45586A;
+           border-bottom: 2px solid #DCE7F0;
          }
          QHeaderView::section:hover {
            background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-           stop:0 #f1f5f9, stop:1 #e2e8f0);
+           stop:0 #EAF1F6, stop:1 #DCE7F0);
          }
          QTableCornerButton::section {
-           background: #f8fafc;
+           background: #F5F9FC;
            border: none;
          }</string>
         </property>
@@ -328,7 +328,7 @@
       <string notr="true">#frameStatus {
         background: rgba(255,255,255,0.8);
         border-radius: 12px;
-        border: 1px solid #e2e8f0;
+        border: 1px solid #DCE7F0;
         padding: 12px;
       }</string>
      </property>
@@ -337,7 +337,7 @@
       <item>
        <widget class="QLabel" name="labelStatus">
         <property name="text"><string>Bem-vindo ao sistema de atendimento psicológico</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { color: #64748b; font-size: 13px; }</string></property>
+        <property name="styleSheet"><string notr="true">QLabel { color: #7C93A3; font-size: 13px; }</string></property>
        </widget>
       </item>
       <item alignment="Qt::AlignRight">
@@ -345,14 +345,14 @@
         <property name="text"><string>🗑️ Limpar Tudo</string></property>
         <property name="styleSheet">
          <string notr="true">QPushButton {
-           background: #f8fafc;
-           color: #64748b;
-           border: 1px solid #e2e8f0;
+           background: #F5F9FC;
+           color: #7C93A3;
+           border: 1px solid #DCE7F0;
            border-radius: 8px;
            padding: 8px 16px;
            font-size: 13px;
          }
-         QPushButton:hover { background: #f1f5f9; }</string>
+         QPushButton:hover { background: #EAF1F6; }</string>
         </property>
        </widget>
       </item>
