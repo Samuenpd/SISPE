@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AdminScreen</class>
- <widget class="QWidget" name="AdminScreen">
+ <class>VincularScreen</class>
+ <widget class="QWidget" name="VincularScreen">
   <property name="styleSheet">
-   <string notr="true">#AdminScreen { 
+   <string notr="true">#VincularScreen { 
      background-color: #EAF2F8;
      font-family: 'Segoe UI', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
    }</string>
@@ -15,11 +15,11 @@
    <property name="rightMargin"><number>32</number></property>
    <property name="bottomMargin"><number>32</number></property>
 
-   <!-- Título Principal -->
+   <!-- Título -->
    <item>
     <widget class="QLabel" name="labelTitulo">
      <property name="text">
-      <string>&lt;b&gt;Painel Administrativo - Gerenciamento de Usuários&lt;/b&gt;</string>
+      <string>&lt;b&gt;Vincular Responsável a Aluno&lt;/b&gt;</string>
      </property>
      <property name="styleSheet">
       <string notr="true">QLabel {
@@ -35,7 +35,7 @@
     </widget>
    </item>
 
-   <!-- Card de Estatísticas -->
+   <!-- Card de estatísticas -->
    <item>
     <widget class="QFrame" name="frameStats">
      <property name="styleSheet">
@@ -47,11 +47,10 @@
       }</string>
      </property>
      <layout class="QHBoxLayout" name="layoutStats">
-      <property name="spacing"><number>16</number></property>
       <item>
        <widget class="QLabel" name="labelInfo">
         <property name="text">
-         <string>&lt;b&gt;📊 Total: 0 | 👨‍👩‍👧 Pais: 0 | 🧠 Psicólogos: 0&lt;/b&gt;</string>
+         <string>&lt;b&gt;🔗 Vínculos ativos: 0&lt;/b&gt;</string>
         </property>
         <property name="styleSheet">
          <string notr="true">QLabel { 
@@ -68,82 +67,34 @@
     </widget>
    </item>
 
-   <!-- Frame Criar Usuário -->
+   <!-- Card de criação de vínculo -->
    <item>
-    <widget class="QFrame" name="frameCriarUsuario">
+    <widget class="QFrame" name="frameVincular">
      <property name="styleSheet">
-      <string notr="true">#frameCriarUsuario {
+      <string notr="true">#frameVincular {
         background: #FFFFFF;
         border-radius: 16px;
         border: 1px solid #DCE7F0;
         padding: 24px;
       }</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutCriar">
+     <layout class="QGridLayout" name="gridLayoutVincular">
       <property name="spacing"><number>16</number></property>
       <item row="0" column="0">
-       <widget class="QLabel" name="labelUsername">
-        <property name="text"><string>&lt;b&gt;Username&lt;/b&gt;</string></property>
+       <widget class="QLabel" name="labelPai">
+        <property name="text"><string>&lt;b&gt;Responsável (pai)&lt;/b&gt;</string></property>
         <property name="styleSheet"><string notr="true">QLabel { color: #5A7085; font-size: 13px; margin-bottom: 4px; }</string></property>
        </widget>
       </item>
       <item row="0" column="1">
-       <widget class="QLabel" name="labelSenha">
-        <property name="text"><string>&lt;b&gt;Senha&lt;/b&gt;</string></property>
+       <widget class="QLabel" name="labelAluno">
+        <property name="text"><string>&lt;b&gt;Aluno&lt;/b&gt;</string></property>
         <property name="styleSheet"><string notr="true">QLabel { color: #5A7085; font-size: 13px; margin-bottom: 4px; }</string></property>
        </widget>
       </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="labelTipo">
-        <property name="text"><string>&lt;b&gt;Tipo de Usuário&lt;/b&gt;</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { color: #5A7085; font-size: 13px; margin-bottom: 4px; }</string></property>
-       </widget>
-      </item>
-      
+
       <item row="1" column="0">
-       <widget class="QLineEdit" name="inputUsername">
-        <property name="placeholderText"><string>Digite o username</string></property>
-        <property name="styleSheet">
-         <string notr="true">QLineEdit {
-           border: 2px solid #DCE7F0;
-           border-radius: 10px;
-           padding: 12px 16px;
-           background-color: #FFFFFF;
-           color: #2E3A46;
-           font-size: 15px;
-           min-height: 44px;
-         }
-         QLineEdit:focus { 
-           border: 2px solid #5B84A6; 
-           background-color: #FFFFFF;
-         }
-         QLineEdit::placeholder { color: #A9BAC7; }</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QLineEdit" name="inputSenha">
-        <property name="placeholderText"><string>Digite a senha</string></property>
-        <property name="styleSheet">
-         <string notr="true">QLineEdit {
-           border: 2px solid #DCE7F0;
-           border-radius: 10px;
-           padding: 12px 16px;
-           background-color: #FFFFFF;
-           color: #2E3A46;
-           font-size: 15px;
-           min-height: 44px;
-         }
-         QLineEdit:focus { 
-           border: 2px solid #5B84A6; 
-           background-color: #FFFFFF;
-         }
-         QLineEdit::placeholder { color: #A9BAC7; }</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="2">
-       <widget class="QComboBox" name="comboTipo">
+       <widget class="QComboBox" name="comboPai">
         <property name="styleSheet">
          <string notr="true">QComboBox {
            padding: 12px 16px;
@@ -173,14 +124,45 @@
            color: #2E3A46;
          }</string>
         </property>
-        <item><property name="text"><string>👨‍👩‍👧 Pai</string></property></item>
-        <item><property name="text"><string>🧠 Psicólogo</string></property></item>
        </widget>
       </item>
-      
-      <item row="1" column="3" alignment="Qt::AlignRight">
-       <widget class="QPushButton" name="btnCriarUsuario">
-        <property name="text"><string>➕ Criar Usuário</string></property>
+      <item row="1" column="1">
+       <widget class="QComboBox" name="comboAluno">
+        <property name="styleSheet">
+         <string notr="true">QComboBox {
+           padding: 12px 16px;
+           border-radius: 10px;
+           border: 2px solid #DCE7F0;
+           background-color: #FFFFFF;
+           color: #2E3A46;
+           font-size: 15px;
+           min-height: 44px;
+         }
+         QComboBox:focus { 
+           border: 2px solid #5B84A6; 
+           background-color: #FFFFFF;
+         }
+         QComboBox::drop-down { border: none; width: 20px; }
+         QComboBox::down-arrow {
+           image: none;
+           border-left: 5px solid transparent;
+           border-right: 5px solid transparent;
+           border-top: 8px solid #5A7085;
+         }
+         QComboBox QAbstractItemView {
+           border: 1px solid #DCE7F0;
+           border-radius: 8px;
+           background-color: white;
+           selection-background-color: #E4EEF5;
+           color: #2E3A46;
+         }</string>
+        </property>
+       </widget>
+      </item>
+
+      <item row="1" column="2" alignment="Qt::AlignRight">
+       <widget class="QPushButton" name="btnVincular">
+        <property name="text"><string>🔗 Vincular</string></property>
         <property name="styleSheet">
          <string notr="true">QPushButton {
            background-color: #5B84A6;
@@ -206,7 +188,7 @@
     </widget>
    </item>
 
-   <!-- Frame da Tabela (EXPANSÍVEL) -->
+   <!-- Tabela de vínculos existentes -->
    <item>
     <widget class="QFrame" name="frameTabela">
      <property name="sizePolicy">
@@ -230,7 +212,7 @@
       <property name="bottomMargin"><number>24</number></property>
       <item>
        <widget class="QLabel" name="labelTabela">
-        <property name="text"><string>&lt;b&gt;Lista de Usuários Cadastrados&lt;/b&gt;</string></property>
+        <property name="text"><string>&lt;b&gt;Vínculos Cadastrados&lt;/b&gt;</string></property>
         <property name="styleSheet"><string notr="true">QLabel { 
           font-size: 18px; 
           color: #2E3A46; 
@@ -240,29 +222,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLineEdit" name="inputBusca">
-        <property name="placeholderText"><string>🔍 Pesquisar usuário por username...</string></property>
-        <property name="styleSheet">
-         <string notr="true">QLineEdit {
-           border: 2px solid #DCE7F0;
-           border-radius: 10px;
-           padding: 12px 16px;
-           background-color: #FFFFFF;
-           color: #2E3A46;
-           font-size: 15px;
-           min-height: 44px;
-           margin-bottom: 12px;
-         }
-         QLineEdit:focus { 
-           border: 2px solid #5B84A6; 
-           background-color: #FFFFFF;
-         }
-         QLineEdit::placeholder { color: #A9BAC7; }</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QTableWidget" name="tabelaUsuarios">
+       <widget class="QTableWidget" name="tabelaVinculos">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -307,8 +267,8 @@
            border: none;
          }</string>
         </property>
-        <column><property name="text"><string>Username</string></property></column>
-        <column><property name="text"><string>Tipo</string></property></column>
+        <column><property name="text"><string>Responsável</string></property></column>
+        <column><property name="text"><string>Aluno</string></property></column>
         <column><property name="text"><string>Ações</string></property></column>
        </widget>
       </item>

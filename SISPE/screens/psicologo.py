@@ -4,16 +4,22 @@ from PyQt6.QtWidgets import (
     QSizePolicy, QScrollArea, QVBoxLayout
 )
 from PyQt6.QtCore import Qt
-from screens.editar_aluno import EditarAlunoScreen
+from screens.utils import gravidade_para_db, gravidade_para_exibir
+from screens.utils import aplicar_sombra
 
 
 class PsicologoScreen(QWidget):
-    def __init__(self, db, app):
+    def __init__(self, db, app, main_app):
         super().__init__()
         uic.loadUi("uis/psicologo.ui", self)
 
+        # Sombra suave nos cards (profundidade calma, sem exagero)
+        for card in (self.frameCadastro, self.frameTabela, self.frameStatus):
+            aplicar_sombra(card)
+
         self.db = db
         self.app = app
+        self.main_app = main_app
 
         self.conteudo = QWidget()
         self.conteudo.setLayout(self.verticalLayout)
@@ -51,14 +57,14 @@ class PsicologoScreen(QWidget):
         self.btnCadastrar.clicked.connect(self.cadastrar_aluno)
         self.btnLimpar.clicked.connect(self.limpar_tudo)
         self.inputBusca.textChanged.connect(self.filtrar_alunos)
-        self.tabelaAlunos.cellDoubleClicked.connect(self.abrir_relatorio)
+        self.tabelaAlunos.cellDoubleClicked.connect(self.abrir_edicao)
 
         self.frameTabela.setMinimumHeight(800)
         self.verticalLayout.setStretch(2, 1)
 
         self.atualizar()
 
-    # ========== MÉTODOS (inalterados, exceto por pequenas adaptações) ==========
+    # ========== MÉTODOS ==========
     def atualizar(self):
         self.filtrar_alunos()
 
@@ -73,7 +79,7 @@ class PsicologoScreen(QWidget):
             self.tabelaAlunos.setItem(i, 0, QTableWidgetItem(nome))
             self.tabelaAlunos.setItem(i, 1, QTableWidgetItem(sala))
             self.tabelaAlunos.setItem(i, 2, QTableWidgetItem(serie))
-            self.tabelaAlunos.setItem(i, 3, QTableWidgetItem(gravidade))
+            self.tabelaAlunos.setItem(i, 3, QTableWidgetItem(gravidade_para_exibir(gravidade)))
 
             ultima_data = self.obter_ultima_data_relatorio(id_)
             self.tabelaAlunos.setItem(i, 4, QTableWidgetItem(ultima_data))
@@ -94,7 +100,7 @@ class PsicologoScreen(QWidget):
         nome = self.inputNome.text().strip()
         sala = self.inputSala.text().strip()
         serie = self.inputSerie.text().strip()
-        gravidade = self.comboGravidade.currentText().split()[-1].lower()
+        gravidade = gravidade_para_db(self.comboGravidade.currentText())
 
         if not nome or not sala or not serie:
             QMessageBox.warning(self, "Erro", "Preencha todos os campos")
@@ -116,20 +122,22 @@ class PsicologoScreen(QWidget):
             self.db.excluir_aluno(aluno_id)
             self.atualizar()
 
-    def abrir_relatorio(self, row, column):
+    def abrir_edicao(self, row, column):
         item_nome = self.tabelaAlunos.item(row, 0)
         if not item_nome:
             return
         aluno_id = item_nome.data(Qt.ItemDataRole.UserRole)
-        nome = item_nome.text()
-        sala = self.tabelaAlunos.item(row, 1).text()
-        serie = self.tabelaAlunos.item(row, 2).text()
-        gravidade = self.tabelaAlunos.item(row, 3).text()
+        self.abrir_edicao_por_id(aluno_id)
 
-        self.janela = EditarAlunoScreen(
-            self.db, self, aluno_id, nome, sala, serie, gravidade
-        )
-        self.janela.show()
+    def abrir_edicao_por_id(self, aluno_id):
+        # Busca os dados atuais do aluno diretamente no banco (garante consistência)
+        alunos = self.db.listar_alunos()
+        aluno = next((a for a in alunos if a[0] == aluno_id), None)
+        if not aluno:
+            return
+        _, nome, sala, serie, gravidade = aluno
+
+        self.main_app.abrir_editar_aluno(aluno_id, nome, sala, serie, gravidade)
 
     def limpar_campos_cadastro(self):
         self.inputNome.clear()

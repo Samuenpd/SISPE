@@ -145,6 +145,37 @@ class DatabaseManager:
         """, (pai_id,))
         return cursor.fetchall()
 
+    def listar_pais(self):
+        """Retorna (id, username) de todos os usuários do tipo 'pai'."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT id, username FROM usuarios WHERE tipo='pai' ORDER BY username")
+        return cursor.fetchall()
+
+    def vinculo_existe(self, pai_id, aluno_id):
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT 1 FROM relacao_pai_aluno WHERE pai_id=? AND aluno_id=?",
+            (pai_id, aluno_id)
+        )
+        return cursor.fetchone() is not None
+
+    def listar_vinculos(self):
+        """Retorna (vinculo_id, pai_username, aluno_id, aluno_nome) de todos os vínculos."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+        SELECT relacao_pai_aluno.id, usuarios.username, alunos.id, alunos.nome
+        FROM relacao_pai_aluno
+        JOIN usuarios ON usuarios.id = relacao_pai_aluno.pai_id
+        JOIN alunos ON alunos.id = relacao_pai_aluno.aluno_id
+        ORDER BY usuarios.username
+        """)
+        return cursor.fetchall()
+
+    def desvincular(self, vinculo_id):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM relacao_pai_aluno WHERE id=?", (vinculo_id,))
+        self.conn.commit()
+
     # RELATÓRIOS
     def criar_relatorio(self, aluno_id, psicologo_id, texto):
         cursor = self.conn.cursor()

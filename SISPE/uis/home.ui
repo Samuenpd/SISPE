@@ -13,8 +13,8 @@
   <property name="styleSheet">
    <string notr="true">#HomeScreen { 
      background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
-     stop:0 #F0EAD6, stop:1 #FAF9F6);
-     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+     stop:0 #EAF2F8, stop:1 #FFFFFF);
+     font-family: 'Segoe UI', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
    }</string>
   </property>
   <layout class="QVBoxLayout" name="mainLayout">
@@ -36,7 +36,7 @@
    <item>
     <widget class="QLabel" name="labelTituloSistema">
      <property name="styleSheet">
-      <string>font-size: 48px; color: #4A7C92; font-weight: 800;</string>
+      <string>font-size: 48px; color: #5B84A6; font-weight: 800;</string>
      </property>
      <property name="text">
       <string>&lt;b&gt;SISPE&lt;/b&gt;</string>
@@ -49,7 +49,7 @@
    <item>
     <widget class="QLabel" name="labelSubtituloSistema">
      <property name="styleSheet">
-      <string>font-size: 18px; color: #6B7A7F;</string>
+      <string>font-size: 18px; color: #7C93A3;</string>
      </property>
      <property name="text">
       <string>Sistema Integrado de Suporte Psicológico Escolar</string>
@@ -59,7 +59,7 @@
    <item>
     <widget class="QLabel" name="labelEscola">
      <property name="styleSheet">
-      <string>font-size: 15px; color: #8B9A9E; margin-top: 4px;</string>
+      <string>font-size: 15px; color: #A9BAC7; margin-top: 4px;</string>
      </property>
      <property name="text">
       <string>E.E. Professora Maria Aparecida Felix Porto</string>
@@ -71,7 +71,7 @@
      <property name="styleSheet">
       <string notr="true">#frameSaudacao {
         background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
-        stop:0 #4A7C92, stop:1 #3B6270);
+        stop:0 #5B84A6, stop:1 #3E5E79);
         border-radius: 16px;
         padding: 24px 32px;
       }</string>
@@ -80,7 +80,7 @@
       <item>
        <widget class="QLabel" name="labelMensagem">
         <property name="styleSheet">
-         <string>font-size: 20px; color: #FAF9F6; font-weight: 600;</string>
+         <string>font-size: 20px; color: #FFFFFF; font-weight: 600;</string>
         </property>
         <property name="text">
          <string>Bem-vindo ao SISPE</string>
@@ -94,8 +94,8 @@
     <widget class="QFrame" name="frameSobre">
      <property name="styleSheet">
       <string notr="true">#frameSobre {
-        background: #FAF9F6;
-        border: 1px solid #A3C1AD;
+        background: #FFFFFF;
+        border: 1px solid #DCE7F0;
         border-radius: 20px;
         padding: 32px;
       }</string>
@@ -107,7 +107,7 @@
       <item>
        <widget class="QLabel" name="labelTituloSobre">
         <property name="styleSheet">
-         <string>font-size: 22px; color: #4A7C92; font-weight: 700;</string>
+         <string>font-size: 22px; color: #5B84A6; font-weight: 700;</string>
         </property>
         <property name="text">
          <string>📖 Sobre o Projeto</string>
@@ -117,7 +117,7 @@
       <item>
        <widget class="QLabel" name="labelTextoSobre">
         <property name="styleSheet">
-         <string>font-size: 15px; color: #2C3E40; line-height: 1.6;</string>
+         <string>font-size: 15px; color: #2E3A46; line-height: 1.6;</string>
         </property>
         <property name="text">
          <string>O SISPE é um sistema facilitador para a organização e comunicação de informações que otimiza a identificação e o encaminhamento de estudantes com necessidades de apoio psicológico na rede pública de ensino de São Paulo. O projeto nasceu da insatisfação com a plataforma &quot;Conviva&quot; e foi moldado a partir de reuniões com psicólogos escolares, visando criar uma ferramenta mais eficiente e acolhedora.</string>
@@ -134,8 +134,8 @@
     <widget class="QFrame" name="frameEquipe">
      <property name="styleSheet">
       <string notr="true">#frameEquipe {
-        background: #FAF9F6;
-        border: 1px solid #A3C1AD;
+        background: #FFFFFF;
+        border: 1px solid #DCE7F0;
         border-radius: 20px;
         padding: 32px;
       }</string>
@@ -147,7 +147,7 @@
       <item>
        <widget class="QLabel" name="labelTituloEquipe">
         <property name="styleSheet">
-         <string>font-size: 22px; color: #4A7C92; font-weight: 700;</string>
+         <string>font-size: 22px; color: #5B84A6; font-weight: 700;</string>
         </property>
         <property name="text">
          <string>👥 Equipe de Desenvolvimento</string>
@@ -157,7 +157,7 @@
       <item>
        <widget class="QLabel" name="labelMembrosEquipe">
         <property name="styleSheet">
-         <string>font-size: 15px; color: #2C3E40; line-height: 1.8;</string>
+         <string>font-size: 15px; color: #2E3A46; line-height: 1.8;</string>
         </property>
         <property name="text">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Andressa Alves Pereira&lt;br/&gt;Erick Lima Santos&lt;br/&gt;Iashyla Campos de Jesus&lt;br/&gt;Gustavo Cardoso Badiale&lt;br/&gt;João Vitor Lino da Cruz&lt;br/&gt;Samuel de Lima Milare&lt;br/&gt;&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Docente orientador:&lt;/span&gt; Filipe Sara Nogueira Pann&lt;br/&gt;&lt;span style=&quot; font-weight:700;&quot;&gt;Guarulhos, 2025&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
@@ -177,8 +177,8 @@
     <widget class="QFrame" name="frameObjetivos">
      <property name="styleSheet">
       <string notr="true">#frameObjetivos {
-        background: #FAF9F6;
-        border: 1px solid #A3C1AD;
+        background: #FFFFFF;
+        border: 1px solid #DCE7F0;
         border-radius: 20px;
         padding: 32px;
       }</string>
@@ -190,7 +190,7 @@
       <item>
        <widget class="QLabel" name="labelTituloObjetivos">
         <property name="styleSheet">
-         <string>font-size: 22px; color: #4A7C92; font-weight: 700;</string>
+         <string>font-size: 22px; color: #5B84A6; font-weight: 700;</string>
         </property>
         <property name="text">
          <string>🎯 Objetivos</string>
@@ -200,7 +200,7 @@
       <item>
        <widget class="QLabel" name="labelTextoObjetivos">
         <property name="styleSheet">
-         <string>font-size: 15px; color: #2C3E40; line-height: 1.6;</string>
+         <string>font-size: 15px; color: #2E3A46; line-height: 1.6;</string>
         </property>
         <property name="text">
          <string>&lt;b&gt;Objetivo Geral:&lt;/b&gt; Propor um sistema facilitador que otimize a identificação e o encaminhamento de estudantes com necessidades de apoio psicológico na rede pública de ensino de São Paulo.&lt;br&gt;&lt;br&gt;
@@ -225,8 +225,8 @@
     <widget class="QFrame" name="frameTeoria">
      <property name="styleSheet">
       <string notr="true">#frameTeoria {
-        background: #FAF9F6;
-        border: 1px solid #A3C1AD;
+        background: #FFFFFF;
+        border: 1px solid #DCE7F0;
         border-radius: 20px;
         padding: 32px;
       }</string>
@@ -238,7 +238,7 @@
       <item>
        <widget class="QLabel" name="labelTituloTeoria">
         <property name="styleSheet">
-         <string>font-size: 22px; color: #4A7C92; font-weight: 700;</string>
+         <string>font-size: 22px; color: #5B84A6; font-weight: 700;</string>
         </property>
         <property name="text">
          <string>📚 Fundamentação Teórica</string>
@@ -248,7 +248,7 @@
       <item>
        <widget class="QLabel" name="labelTextoTeoria">
         <property name="styleSheet">
-         <string>font-size: 15px; color: #2C3E40; line-height: 1.6;</string>
+         <string>font-size: 15px; color: #2E3A46; line-height: 1.6;</string>
         </property>
         <property name="text">
          <string>&lt;b&gt;Paulo Freire:&lt;/b&gt; Educação como espaço de diálogo e transformação.&lt;br&gt;
@@ -273,8 +273,8 @@
     <widget class="QFrame" name="frameODS">
      <property name="styleSheet">
       <string notr="true">#frameODS {
-        background: #FAF9F6;
-        border: 1px solid #A3C1AD;
+        background: #FFFFFF;
+        border: 1px solid #DCE7F0;
         border-radius: 20px;
         padding: 32px;
       }</string>
@@ -286,7 +286,7 @@
       <item>
        <widget class="QLabel" name="labelTituloODS">
         <property name="styleSheet">
-         <string>font-size: 22px; color: #4A7C92; font-weight: 700;</string>
+         <string>font-size: 22px; color: #5B84A6; font-weight: 700;</string>
         </property>
         <property name="text">
          <string>🌍 Objetivos de Desenvolvimento Sustentável</string>
@@ -296,7 +296,7 @@
       <item>
        <widget class="QLabel" name="labelTextoODS">
         <property name="styleSheet">
-         <string>font-size: 15px; color: #2C3E40; line-height: 1.6;</string>
+         <string>font-size: 15px; color: #2E3A46; line-height: 1.6;</string>
         </property>
         <property name="text">
          <string>Este projeto contribui para os ODS da ONU:&lt;br&gt;&lt;br&gt;

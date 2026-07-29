@@ -7,7 +7,7 @@
   </property>
   <property name="windowTitle"><string>SISPE</string></property>
   <property name="styleSheet">
-   <string notr="true">QMainWindow { background: #f0f4f8; }</string>
+   <string notr="true">QMainWindow { background: #F6FAFC; }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -21,9 +21,13 @@
       <property name="minimumSize"><size><width>0</width><height>60</height></size></property>
       <property name="maximumSize"><size><width>16777215</width><height>60</height></size></property>
       <property name="styleSheet">
-       <string notr="true">#TopBar { background-color: #0047AB; border: none; }
-        QPushButton { color: white; background: transparent; border: none; font-size: 16px; font-weight: bold; padding: 5px; }
-        QPushButton:hover { color: #3399FF; font-size: 17px; padding: 2px; }</string>
+       <string notr="true">#TopBar { 
+         background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #33546D, stop:1 #3E5E79); 
+         border: none; 
+         border-bottom: 1px solid rgba(255,255,255,0.08);
+       }
+        QPushButton { color: #EAF2F8; background: transparent; border: none; font-size: 14px; font-weight: 600; padding: 8px 14px; border-radius: 8px; }
+        QPushButton:hover { color: #FFFFFF; background: rgba(255,255,255,0.10); }</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item><widget class="QPushButton" name="bnthome"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>Inicio</string></property></widget></item>
