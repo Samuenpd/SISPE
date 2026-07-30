@@ -1,3 +1,4 @@
+
 import sqlite3
 import bcrypt
 
@@ -14,7 +15,8 @@ class DatabaseManager:
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE,
             senha BLOB,
-            tipo TEXT
+            tipo TEXT,
+            data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
         """)
 
@@ -46,6 +48,32 @@ class DatabaseManager:
         )
         """)
 
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS compromissos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            psicologo_id INTEGER,
+            titulo TEXT,
+            data TEXT,
+            hora TEXT,
+            cor TEXT,
+            descricao TEXT
+        )
+        """)
+
+        # Migração: bancos criados antes de existir 'data_criacao' não têm a coluna
+        cursor.execute("PRAGMA table_info(usuarios)")
+        colunas = [c[1] for c in cursor.fetchall()]
+        if "data_criacao" not in colunas:
+            cursor.execute(
+                "ALTER TABLE usuarios ADD COLUMN data_criacao TIMESTAMP"
+            )
+
+            cursor.execute("""
+            UPDATE usuarios
+            SET data_criacao = CURRENT_TIMESTAMP
+            WHERE data_criacao IS NULL
+            """)
+
         cursor.execute("SELECT * FROM usuarios WHERE username='admin'")
         if not cursor.fetchone():
             senha = bcrypt.hashpw("123".encode(), bcrypt.gensalt())
@@ -63,7 +91,7 @@ class DatabaseManager:
         result = cursor.fetchone()
 
         if result and bcrypt.checkpw(senha.encode(), result[1]):
-            return {"id": result[0], "tipo": result[2]}
+            return {"id": result[0], "tipo": result[2], "username": user}
         return None
 
     # USUÁRIOS
@@ -193,3 +221,83 @@ class DatabaseManager:
         ORDER BY data DESC
         """, (aluno_id,))
         return cursor.fetchall()
+
+    # PERFIL
+    def obter_usuario(self, user_id):
+        """Retorna dict com username, tipo e data_criacao de um usuário."""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT username, tipo, data_criacao FROM usuarios WHERE id=?", (user_id,)
+        )
+        result = cursor.fetchone()
+        if not result:
+            return None
+        return {"username": result[0], "tipo": result[1], "data_criacao": result[2]}
+
+    # AGENDA (compromissos do psicólogo)
+    def criar_compromisso(self, psicologo_id, titulo, data, hora, cor, descricao=""):
+        cursor = self.conn.cursor()
+        cursor.execute("""
+        INSERT INTO compromissos (psicologo_id, titulo, data, hora, cor, descricao)
+        VALUES (?, ?, ?, ?, ?, ?)
+        """, (psicologo_id, titulo, data, hora, cor, descricao))
+        self.conn.commit()
+
+    def listar_compromissos(self, psicologo_id):
+        """Retorna (id, titulo, data, hora, cor, descricao) ordenados por data/hora."""
+        cursor = self.conn.cursor()
+        cursor.execute("""
+        SELECT id, titulo, data, hora, cor, descricao
+        FROM compromissos
+        WHERE psicologo_id=?
+        ORDER BY data ASC, hora ASC
+        """, (psicologo_id,))
+        return cursor.fetchall()
+
+    def compromissos_por_data(self, psicologo_id, data):
+
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            SELECT
+                id,
+                titulo,
+                hora,
+                cor,
+                descricao
+            FROM compromissos
+            WHERE psicologo_id=?
+            AND data=?
+            ORDER BY hora
+        """, (psicologo_id, data))
+
+        return cursor.fetchall()
+
+    def datas_com_compromissos(self, psicologo_id):
+        cursor = self.conn.cursor()
+
+        cursor.execute("""
+            SELECT DISTINCT data
+            FROM compromissos
+            WHERE psicologo_id=?
+        """, (psicologo_id,))
+
+        return [linha[0] for linha in cursor.fetchall()]
+
+    def excluir_compromisso(self, compromisso_id):
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM compromissos WHERE id=?", (compromisso_id,))
+        self.conn.commit()
+
+    def atualizar_compromisso(self, compromisso_id, titulo, data, hora, cor, descricao=""):
+        """Atualiza um compromisso existente."""
+        cursor = self.conn.cursor()
+        cursor.execute(
+            """
+            UPDATE compromissos
+            SET titulo=?, data=?, hora=?, cor=?, descricao=?
+            WHERE id=?
+            """,
+            (titulo, data, hora, cor, descricao, compromisso_id)
+        )
+        self.conn.commit()

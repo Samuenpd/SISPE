@@ -7,6 +7,7 @@ from screens.pai import PaiScreen
 from screens.vincular import VincularScreen
 from screens.editar_aluno import EditarAlunoScreen
 from screens.historico_relatorios import HistoricoRelatoriosScreen
+from screens.configuracoes import ConfiguracoesScreen
 
 class MainApp(QMainWindow):
     def __init__(self, db, app):
@@ -36,7 +37,7 @@ class MainApp(QMainWindow):
         self.vincular = VincularScreen(db)
         self.editar_aluno = EditarAlunoScreen(db, self)
         self.historico = HistoricoRelatoriosScreen(db, self)
-
+        self.configuracoes = ConfiguracoesScreen(db)
         self.stackedWidget.addWidget(self.home)
         self.stackedWidget.addWidget(self.psico)
         self.stackedWidget.addWidget(self.admin)
@@ -44,12 +45,13 @@ class MainApp(QMainWindow):
         self.stackedWidget.addWidget(self.vincular)
         self.stackedWidget.addWidget(self.editar_aluno)
         self.stackedWidget.addWidget(self.historico)
-
+        self.stackedWidget.addWidget(self.configuracoes)
         # Conexões da barra
         self.bnthome.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.home))
         self.bntvincular.clicked.connect(self.abrir_vincular)
         self.btngerenusua.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.admin))
         self.btnRegistrarAluno.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.psico))
+        self.bntconfig.clicked.connect(self.abrir_configuracoes)
         self.bntsair.clicked.connect(self.logout)
 
     # ---------- Navegação entre telas internas ----------
@@ -72,7 +74,12 @@ class MainApp(QMainWindow):
     def voltar_para_editar_aluno(self):
         self.stackedWidget.setCurrentWidget(self.editar_aluno)
 
+    def abrir_configuracoes(self):
+        self.configuracoes.carregar(self.usuario_logado)
+        self.stackedWidget.setCurrentWidget(self.configuracoes)
+
     def carregar_usuario(self, user):
+        self.usuario_logado = user
         tipo = user["tipo"]
         self.btnRegistrarAluno.hide()
         self.bntvincular.hide()
