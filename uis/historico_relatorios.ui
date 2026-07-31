@@ -3,11 +3,7 @@
  <class>HistoricoRelatoriosScreen</class>
  <widget class="QWidget" name="HistoricoRelatoriosScreen">
   <property name="styleSheet">
-   <string notr="true">#HistoricoRelatoriosScreen { 
-     background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
-     stop:0 #EAF2F8, stop:1 #F6FAFC);
-     font-family: 'Segoe UI', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-   }</string>
+   <string notr="true">#HistoricoRelatoriosScreen { background: transparent; font-family: 'Segoe UI', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif; }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing"><number>24</number></property>
@@ -15,7 +11,6 @@
    <property name="topMargin"><number>32</number></property>
    <property name="rightMargin"><number>32</number></property>
    <property name="bottomMargin"><number>32</number></property>
-
    <!-- Barra de topo -->
    <item>
     <layout class="QHBoxLayout" name="horizontalLayoutTopo">
@@ -23,16 +18,7 @@
       <widget class="QPushButton" name="btnVoltar">
        <property name="text"><string>← Voltar</string></property>
        <property name="styleSheet">
-        <string notr="true">QPushButton {
-          background: #F5F9FC;
-          color: #45586A;
-          border: 1px solid #DCE7F0;
-          border-radius: 10px;
-          padding: 10px 18px;
-          font-size: 14px;
-          font-weight: 600;
-        }
-        QPushButton:hover { background: #EAF1F6; }</string>
+        <string notr="true">QPushButton { background: #F5F9FC; color: #45586A; border: 1px solid #DCE7F0; border-radius: 10px; padding: 10px 18px; font-size: 14px; font-weight: 600; } QPushButton:hover { background: #EAF1F6; }</string>
        </property>
       </widget>
      </item>
@@ -40,11 +26,7 @@
       <widget class="QLabel" name="labelTitulo">
        <property name="text"><string>&lt;b&gt;Histórico de Relatórios&lt;/b&gt;</string></property>
        <property name="styleSheet">
-        <string notr="true">QLabel {
-          font-size: 22px;
-          color: #2E3A46;
-          padding-left: 12px;
-        }</string>
+        <string notr="true">QLabel { font-size: 22px; color: #2E3A46; padding-left: 12px; background: transparent; }</string>
        </property>
       </widget>
      </item>
@@ -54,9 +36,17 @@
        <property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property>
       </spacer>
      </item>
+     <!-- NOVO BOTÃO EXPORTAR PDF INJETADO NA BARRA SUPERIOR -->
+     <item>
+      <widget class="QPushButton" name="btnExportarPDF">
+       <property name="text"><string>📄 Exportar Prontuário (PDF)</string></property>
+       <property name="styleSheet">
+        <string notr="true">QPushButton { background: #5B84A6; color: white; border: none; border-radius: 10px; padding: 10px 20px; font-size: 14px; font-weight: 600; } QPushButton:hover { background: #2F6EA6; }</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
-
    <!-- Tabela de relatórios -->
    <item>
     <widget class="QFrame" name="frameTabela">
@@ -67,11 +57,7 @@
       </sizepolicy>
      </property>
      <property name="styleSheet">
-      <string notr="true">#frameTabela {
-        background: white;
-        border-radius: 16px;
-        border: 1px solid #DCE7F0;
-      }</string>
+      <string notr="true">#frameTabela { background: white; border-radius: 16px; border: 1px solid #DCE7F0; }</string>
      </property>
      <layout class="QVBoxLayout" name="layoutTabela">
       <property name="spacing"><number>12</number></property>
@@ -82,11 +68,7 @@
       <item>
        <widget class="QLabel" name="labelTabela">
         <property name="text"><string>&lt;b&gt;Relatórios Registrados&lt;/b&gt;</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { 
-          font-size: 16px; 
-          color: #2E3A46; 
-          padding: 4px 0px;
-        }</string></property>
+        <property name="styleSheet"><string notr="true">QLabel { font-size: 16px; color: #2E3A46; padding: 4px 0px; background: transparent; }</string></property>
        </widget>
       </item>
       <item>
@@ -102,35 +84,7 @@
         <property name="horizontalScrollBarPolicy"><enum>Qt::ScrollBarAsNeeded</enum></property>
         <property name="alternatingRowColors"><bool>true</bool></property>
         <property name="styleSheet">
-         <string notr="true">QTableWidget {
-           background: transparent;
-           gridline-color: #EAF1F6;
-           font-size: 14px;
-           border: none;
-           selection-background-color: #E4EEF5;
-         }
-         QTableWidget::item {
-           padding: 10px;
-           border-bottom: 1px solid #EAF1F6;
-         }
-         QTableWidget::item:selected {
-           background-color: #5B84A6;
-           color: white;
-         }
-         QHeaderView::section {
-           background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-           stop:0 #F5F9FC, stop:1 #DCE7F0);
-           padding: 14px 12px;
-           border: none;
-           font-weight: 600;
-           font-size: 14px;
-           color: #45586A;
-           border-bottom: 2px solid #DCE7F0;
-         }
-         QTableCornerButton::section {
-           background: #F5F9FC;
-           border: none;
-         }</string>
+         <string notr="true">QTableWidget { background: transparent; gridline-color: #EAF1F6; font-size: 14px; border: none; selection-background-color: #E4EEF5; } QTableWidget::item { padding: 10px; border-bottom: 1px solid #EAF1F6; } QTableWidget::item:selected { background-color: #5B84A6; color: white; } QHeaderView::section { background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #F5F9FC, stop:1 #DCE7F0); padding: 14px 12px; border: none; font-weight: 600; font-size: 14px; color: #45586A; border-bottom: 2px solid #DCE7F0; } QTableCornerButton::section { background: #F5F9FC; border: none; }</string>
         </property>
         <column><property name="text"><string>Data</string></property></column>
         <column><property name="text"><string>Prévia</string></property></column>
@@ -139,7 +93,6 @@
      </layout>
     </widget>
    </item>
-
    <!-- Relatório completo -->
    <item>
     <widget class="QFrame" name="frameDetalhe">
@@ -150,11 +103,7 @@
       </sizepolicy>
      </property>
      <property name="styleSheet">
-      <string notr="true">#frameDetalhe {
-        background: white;
-        border-radius: 16px;
-        border: 1px solid #DCE7F0;
-      }</string>
+      <string notr="true">#frameDetalhe { background: white; border-radius: 16px; border: 1px solid #DCE7F0; }</string>
      </property>
      <layout class="QVBoxLayout" name="layoutDetalhe">
       <property name="spacing"><number>12</number></property>
@@ -165,11 +114,7 @@
       <item>
        <widget class="QLabel" name="labelDetalhe">
         <property name="text"><string>&lt;b&gt;Relatório Selecionado&lt;/b&gt;</string></property>
-        <property name="styleSheet"><string notr="true">QLabel { 
-          font-size: 16px; 
-          color: #2E3A46; 
-          padding: 4px 0px;
-        }</string></property>
+        <property name="styleSheet"><string notr="true">QLabel { font-size: 16px; color: #2E3A46; padding: 4px 0px; background: transparent; }</string></property>
        </widget>
       </item>
       <item>
@@ -177,14 +122,7 @@
         <property name="readOnly"><bool>true</bool></property>
         <property name="placeholderText"><string>Selecione um relatório na tabela acima para ver o conteúdo completo...</string></property>
         <property name="styleSheet">
-         <string notr="true">QTextEdit {
-           border: 2px solid #DCE7F0;
-           border-radius: 10px;
-           padding: 12px;
-           background-color: #F5F9FC;
-           color: #2E3A46;
-           font-size: 14px;
-         }</string>
+         <string notr="true">QTextEdit { border: 2px solid #DCE7F0; border-radius: 10px; padding: 12px; background-color: #F5F9FC; color: #2E3A46; font-size: 14px; }</string>
         </property>
        </widget>
       </item>

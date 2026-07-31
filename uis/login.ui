@@ -15,8 +15,6 @@
   </property>
   <property name="styleSheet">
    <string notr="true">QMainWindow {
-     background: qlineargradient(x1:0, y1:0, x2:1, y2:1, 
-     stop:0 #EAF2F8, stop:1 #F6FAFC);
      font-family: 'Segoe UI', 'Nunito Sans', -apple-system, BlinkMacSystemFont, sans-serif;
    }</string>
   </property>

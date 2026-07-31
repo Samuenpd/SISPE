@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QApplication, QStackedWidget
 from database import DatabaseManager
 from screens.login_qt import LoginScreen
 from main_app_qt import MainApp
+from screens.theme import GLOBAL_STYLESHEET
 
 
 class App(QStackedWidget):
@@ -30,6 +31,7 @@ class App(QStackedWidget):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet(GLOBAL_STYLESHEET)  # estilo visual global (screens/theme.py)
 
     window = App()
     window.resize(1000, 600)

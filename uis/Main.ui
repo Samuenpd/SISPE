@@ -7,7 +7,7 @@
   </property>
   <property name="windowTitle"><string>SISPE</string></property>
   <property name="styleSheet">
-   <string notr="true">QMainWindow { background: #F6FAFC; }</string>
+   <string notr="true">QMainWindow { background: #F5F7FA; }</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -18,25 +18,57 @@
     <property name="bottomMargin"><number>0</number></property>
     <item>
      <widget class="QFrame" name="TopBar">
-      <property name="minimumSize"><size><width>0</width><height>60</height></size></property>
-      <property name="maximumSize"><size><width>16777215</width><height>60</height></size></property>
+      <property name="minimumSize"><size><width>0</width><height>64</height></size></property>
+      <property name="maximumSize"><size><width>16777215</width><height>64</height></size></property>
       <property name="styleSheet">
        <string notr="true">#TopBar { 
-         background: qlineargradient(x1:0, y1:0, x2:1, y2:0, stop:0 #33546D, stop:1 #3E5E79); 
+         background: #FFFFFF; 
          border: none; 
-         border-bottom: 1px solid rgba(255,255,255,0.08);
+         border-bottom: 1px solid #E4E9EF;
        }
-        QPushButton { color: #EAF2F8; background: transparent; border: none; font-size: 14px; font-weight: 600; padding: 8px 14px; border-radius: 8px; }
-        QPushButton:hover { color: #FFFFFF; background: rgba(255,255,255,0.10); }</string>
+        QPushButton {
+          color: #5B7285;
+          background: transparent;
+          border: none;
+          border-bottom: 3px solid transparent;
+          font-size: 14px;
+          font-weight: 600;
+          padding: 8px 16px;
+          border-radius: 8px;
+        }
+        QPushButton:hover {
+          color: #2F6EA6;
+          background: #F1F7FB;
+        }
+        QPushButton[ativo="true"] {
+          color: #2F6EA6;
+          background: #DDEEFF;
+          border-bottom: 3px solid #5B84A6;
+        }
+        #bntsair:hover {
+          color: #D9736C;
+          background: #FBEEEC;
+        }
+        #labelMarcaTopo {
+          color: #2F6EA6;
+          font-size: 16px;
+          font-weight: 700;
+          padding-left: 8px;
+        }</string>
       </property>
       <layout class="QHBoxLayout" name="horizontalLayout_3">
-       <item><widget class="QPushButton" name="bnthome"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>Inicio</string></property></widget></item>
-       <item><widget class="QPushButton" name="btnRegistrarAluno"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>Registrar aluno</string></property></widget></item>
-       <item><widget class="QPushButton" name="bntvincular"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>Vincular</string></property></widget></item>
-       <item><widget class="QPushButton" name="btngerenusua"><property name="minimumSize"><size><width>170</width><height>50</height></size></property><property name="maximumSize"><size><width>200</width><height>50</height></size></property><property name="text"><string>Gerenciar usuários</string></property></widget></item>
-       <item><widget class="QPushButton" name="bntconfig"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>Configurações</string></property></widget></item>
+       <property name="leftMargin"><number>16</number></property>
+       <property name="rightMargin"><number>16</number></property>
+       <property name="spacing"><number>4</number></property>
+       <item><widget class="QLabel" name="labelMarcaTopo"><property name="text"><string>🧭 SISPE</string></property></widget></item>
+       <item><spacer name="horizontalSpacerMarca"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>28</width><height>20</height></size></property></spacer></item>
+       <item><widget class="QPushButton" name="bnthome"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>🏠 Início</string></property></widget></item>
+       <item><widget class="QPushButton" name="btnRegistrarAluno"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>170</width><height>50</height></size></property><property name="text"><string>🎓 Registrar aluno</string></property></widget></item>
+       <item><widget class="QPushButton" name="bntvincular"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>🔗 Vincular</string></property></widget></item>
+       <item><widget class="QPushButton" name="btngerenusua"><property name="minimumSize"><size><width>170</width><height>50</height></size></property><property name="maximumSize"><size><width>210</width><height>50</height></size></property><property name="text"><string>👥 Gerenciar usuários</string></property></widget></item>
+       <item><widget class="QPushButton" name="bntconfig"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>170</width><height>50</height></size></property><property name="text"><string>⚙️ Configurações</string></property></widget></item>
        <item><spacer name="horizontalSpacer"><property name="orientation"><enum>Qt::Orientation::Horizontal</enum></property><property name="sizeHint" stdset="0"><size><width>40</width><height>20</height></size></property></spacer></item>
-       <item><widget class="QPushButton" name="bntsair"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>Sair</string></property></widget></item>
+       <item><widget class="QPushButton" name="bntsair"><property name="minimumSize"><size><width>0</width><height>50</height></size></property><property name="maximumSize"><size><width>150</width><height>50</height></size></property><property name="text"><string>🚪 Sair</string></property></widget></item>
       </layout>
      </widget>
     </item>
