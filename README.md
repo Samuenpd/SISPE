@@ -189,10 +189,3 @@ pyinstaller main.spec
 
 **Docente orientador:** Filipe Sara Nogueira Pann
 **Guarulhos, 2025**
-
----
-
-## 📄 Licença
-
-Projeto acadêmico desenvolvido para fins educacionais. Defina uma licença
-(ex: MIT) caso pretenda distribuir ou aceitar contribuições externas.
