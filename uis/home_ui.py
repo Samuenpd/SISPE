@@ -124,8 +124,9 @@ _TEXTOS_CARDS_INFO = [
         "ferramenta mais eficiente e acolhedora."
     )),
     ("👥 EQUIPE DE DESENVOLVIMENTO", (
-        "Andressa Alves Pereira<br>Erick Lima Santos<br>Iashyla Campos de Jesus<br>"
-        "Gustavo Cardoso Badiale<br>João Vitor Lino da Cruz<br>Samuel de Lima Milare"
+        "Andressa Alves Pereira<br>Byanca Santos Mello<br>Erick Lima Santos<br>Iashyla Campos de Jesus<br>"
+        "Gustavo Cardoso Badiale<br>João Vitor Lino da Cruz<br>"
+        "Karen Brito Gatto<br>Samuel de Lima Milare"
         "<br><br><b>Docente orientador:</b> Filipe Sara Nogueira Pann<br>"
         "<b>Guarulhos, 2025</b>"
     )),
