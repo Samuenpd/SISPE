@@ -5,6 +5,7 @@ from database import DatabaseManager
 from screens.login_qt import LoginScreen
 from main_app_qt import MainApp
 from screens.theme import GLOBAL_STYLESHEET
+import os
 
 
 class App(QStackedWidget):
@@ -27,6 +28,12 @@ class App(QStackedWidget):
 
         # começa no login
         self.setCurrentIndex(0)
+
+    def resolver_caminho(caminho_relativo):
+        """ Retorna o caminho absoluto para o arquivo, funcionando em modo de desenvolvimento ou no .exe """
+        if hasattr(sys, '_MEIPASS'):
+            return os.path.join(sys._MEIPASS, caminho_relativo)
+        return os.path.join(os.path.abspath("."), caminho_relativo)
 
 
 if __name__ == "__main__":

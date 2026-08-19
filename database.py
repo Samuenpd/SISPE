@@ -1,9 +1,37 @@
+import os
+import sys
 import sqlite3
 import bcrypt
 
+
+def obter_pasta_dados():
+    """Retorna a pasta de dados do usuário para o SISPE, criando-a se
+    necessário. Evita depender do diretório de trabalho atual (que pode não
+    ser gravável quando o app roda como .exe empacotado com PyInstaller).
+
+    Windows: %APPDATA%\\SISPE
+    macOS:   ~/Library/Application Support/SISPE
+    Linux:   $XDG_DATA_HOME/SISPE (ou ~/.local/share/SISPE)
+    """
+    if sys.platform == "win32":
+        base = os.environ.get("APPDATA", os.path.expanduser("~"))
+    elif sys.platform == "darwin":
+        base = os.path.join(os.path.expanduser("~"), "Library", "Application Support")
+    else:
+        base = os.environ.get("XDG_DATA_HOME", os.path.join(os.path.expanduser("~"), ".local", "share"))
+
+    pasta = os.path.join(base, "SISPE")
+    os.makedirs(pasta, exist_ok=True)
+    return pasta
+
+
 class DatabaseManager:
-    def __init__(self):
-        self.conn = sqlite3.connect("sispe.db")
+    def __init__(self, caminho_banco=None):
+        # Por padrão, o banco fica no AppData do usuário — não mais no
+        # diretório onde o .exe é executado. Aceita um caminho explícito
+        # (ex: para testes) via caminho_banco.
+        self.caminho_banco = caminho_banco or os.path.join(obter_pasta_dados(), "sispe.db")
+        self.conn = sqlite3.connect(self.caminho_banco)
         self.create_tables()
 
     def create_tables(self):
@@ -165,7 +193,7 @@ class DatabaseManager:
     def alunos_do_pai(self, pai_id):
         cursor = self.conn.cursor()
         cursor.execute("""
-        SELECT alunos.id, alunos.nome
+        SELECT alunos.id, alunos.nome, alunos.sala, alunos.serie
         FROM alunos
         JOIN relacao_pai_aluno ON alunos.id = relacao_pai_aluno.aluno_id
         WHERE relacao_pai_aluno.pai_id=?
@@ -299,4 +327,72 @@ class DatabaseManager:
             """,
             (titulo, data, hora, cor, descricao, compromisso_id)
         )
+        self.conn.commit()
+
+    # DASHBOARD (tela inicial)
+    def obter_estatisticas_dashboard(self):
+        """Retorna um dict com os números exibidos nos cards da tela inicial.
+        Mantém toda a lógica de SQL aqui — as telas só consomem este método."""
+        cursor = self.conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM alunos")
+        total_alunos = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM relatorios")
+        total_relatorios = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(DISTINCT pai_id) FROM relacao_pai_aluno")
+        total_pais = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM alunos WHERE gravidade='grave'")
+        total_urgentes = cursor.fetchone()[0]
+
+        return {
+            "alunos": total_alunos,
+            "relatorios": total_relatorios,
+            "pais": total_pais,
+            "urgentes": total_urgentes,
+        }
+
+    def obter_estatisticas_psicologo(self, psicologo_id):
+        """Retorna um dict só com os números que pertencem a ESSE psicólogo
+        (relatórios que ele escreveu, compromissos que ele agendou) — ao
+        contrário de obter_estatisticas_dashboard(), que é global/escola
+        inteira e é só para o admin."""
+        cursor = self.conn.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM relatorios WHERE psicologo_id=?", (psicologo_id,))
+        total_relatorios = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM compromissos WHERE psicologo_id=?", (psicologo_id,))
+        total_compromissos = cursor.fetchone()[0]
+
+        return {
+            "relatorios": total_relatorios,
+            "compromissos": total_compromissos,
+        }
+
+    # ADMINISTRAÇÃO (gerenciar usuários)
+    def contar_usuarios(self):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM usuarios")
+        return cursor.fetchone()[0]
+
+    def contar_usuarios_por_tipo(self, tipo):
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM usuarios WHERE tipo=?", (tipo,))
+        return cursor.fetchone()[0]
+
+    def listar_usuarios(self):
+        """Retorna (id, username, tipo) de todos os usuários cadastrados."""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT id, username, tipo FROM usuarios")
+        return cursor.fetchall()
+
+    def excluir_usuario(self, user_id):
+        """Exclui o usuário e limpa vínculos/relatórios associados a ele."""
+        cursor = self.conn.cursor()
+        cursor.execute("DELETE FROM relacao_pai_aluno WHERE pai_id=?", (user_id,))
+        cursor.execute("DELETE FROM relatorios WHERE psicologo_id=?", (user_id,))
+        cursor.execute("DELETE FROM usuarios WHERE id=?", (user_id,))
         self.conn.commit()

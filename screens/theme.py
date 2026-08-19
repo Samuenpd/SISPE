@@ -46,11 +46,25 @@ CORES = {
     "erro":         "#D9736C",  # vermelho (suave, não vibrante)
     "erro_escuro":  "#B85850",
 
-    # NOVAS CORES EXCLUSIVAS PARA UM FUNDO ACOLHEDOR:
-    "fundo_gradiente_topo": "#F9F6F0",    # Marfim/Areia ultra suave (substitui o azul frio)
-    "fundo_circulo_topo": "#E5DDF2",      # Lavanda reconfortante (segurança e calma)
-    "fundo_circulo_base": "#F7E5D9",      # Pêssego caloroso (acolhimento e afeto)
-    "fundo_linhas": "#A199B8",            # Cinza-lavanda discreto para as curvas abstratas
+    # ------------------------------------------------------------------
+    # PALETA DO BANNER (Canva) — extraída da identidade visual oficial do
+    # SISPE. Esta é a fonte de verdade para o novo fundo orgânico e para
+    # qualquer componente Fluent que precise "casar" com o banner.
+    # ------------------------------------------------------------------
+    "navy":         "#001E4D",   # azul-marinho profundo (faixas, títulos fortes)
+    "pessego":      "#FCDDC3",   # pêssego caloroso (mancha orgânica topo-esquerda)
+    "azul_poster":  "#C1D7E8",   # azul claro suave (mancha orgânica base-direita)
+    "teal":         "#197DA6",   # azul-petróleo (mancha orgânica topo-direita, linhas)
+    "creme":        "#F7F1EE",   # marfim/creme do fundo do banner
+
+    # Mantidos por compatibilidade com o fundo.py existente, agora
+    # apontando para os tons reais do banner em vez dos tons antigos.
+    "fundo_gradiente_topo": "#F7F1EE",    # creme do banner
+    "fundo_circulo_topo": "#197DA6",      # mancha teal (topo-direita no banner)
+    "fundo_circulo_base": "#FCDDC3",      # mancha pêssego (topo-esquerda no banner)
+    "fundo_circulo_extra": "#C1D7E8",     # mancha azul-claro (base-direita no banner)
+    "fundo_linhas": "#7C93A3",            # cinza-azulado discreto para as curvas pontilhadas
+    "tag_fundo": "#5B7A93",               # fundo das "tags" de seção (ex: banner "INTRODUÇÃO E PROBLEMA")
 }
 
 # Atalhos usados com frequência
@@ -225,6 +239,22 @@ QListWidget::item:selected {{
 """
 
 
+def estilo_tag_secao(radius=10):
+    """"Rótulo" colorido usado no topo de cards informativos — mesmo espírito
+    das tags do banner do SISPE (ex: "INTRODUÇÃO E PROBLEMA", "CONCLUSÃO").
+    Uso: label.setStyleSheet(estilo_tag_secao())"""
+    return f"""
+        QLabel {{
+            background: {CORES['tag_fundo']};
+            color: white;
+            font-weight: 700;
+            font-size: 13px;
+            border-radius: {radius}px;
+            padding: 8px 16px;
+        }}
+    """
+
+
 # ---------------------------------------------------------------------------
 # ESTILO GLOBAL — aplicado uma única vez em toda a QApplication (main.py).
 # Cobre elementos que hoje NÃO têm styleSheet próprio nos arquivos .ui
@@ -258,7 +288,7 @@ QMainWindow, QStackedWidget, QWidget#centralwidget, QWidget.HomeScreen, QWidget.
 # Impede que telas com stylesheets escuras (ex: tela do psicólogo) corrompam os alertas
 # ===========================================================================
 QMessageBox, QDialog, QMessageBox QLabel, QMessageBox QPushButton {{
-    background-color: #FFFFFF !important;
+    background-color: {CORES['creme']} !important;
     color: #26343F !important;
 }}
 

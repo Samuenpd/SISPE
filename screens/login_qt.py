@@ -1,65 +1,49 @@
-from PyQt6 import uic 
-from PyQt6.QtWidgets import QMainWindow, QMessageBox 
-from screens.utils import aplicar_sombra 
-from screens.fundo import BackgroundWidget 
-from screens.efeitos import instalar_hover_crescimento 
+"""
+screens/login_qt.py
+====================
+Lógica da tela de login do SISPE.
 
-class LoginScreen(QMainWindow):  # Corrigido: Herda apenas de QMainWindow
+Este arquivo NÃO constrói nenhum widget diretamente — toda a interface visual
+vive em screens/login_ui.py (classe Ui_LoginScreen). Aqui só ficam:
+autenticação, conexão de sinais e navegação entre telas.
+"""
+
+from PyQt6.QtWidgets import QWidget, QMessageBox
+
+from uis.login_ui import Ui_LoginScreen
+from screens.fundo import BackgroundWidget
+from screens.utils import mostrar_alerta
+
+
+class LoginScreen(QWidget):
     def __init__(self, app, db):
         super().__init__()
-        uic.loadUi("uis/login.ui", self) 
+        self.app = app
+        self.db = db
 
-        # 1. Cria o widget de fundo independente passando esta janela como pai
+        self.ui = Ui_LoginScreen()
+        self.ui.setupUi(self)
+
+        # Fundo orgânico compartilhado (screens/fundo.py)
         self.fundo = BackgroundWidget(self)
-        
-        # 2. Faz o fundo acompanhar automaticamente o redimensionamento da janela
         self.installEventFilter(self.fundo)
 
-        # Deixa o central widget transparente para o fundo SVG aparecer
-        self.centralwidget.setStyleSheet("background: transparent;") 
+        self.ui.bntContinuar.clicked.connect(self.login)
 
-        # Sombra suave no card de login (profundidade calma, sem exagero) 
-        aplicar_sombra(self.cardLogin, blur=36, y_offset=10, alpha=22) 
+    def login(self):
+        usuario = self.ui.inputUsuario.text().strip()
+        senha = self.ui.inputSenha.text().strip()
 
-        # Botão de entrar cresce levemente ao passar o mouse 
-        instalar_hover_crescimento(self.bntContinuar, escala=1.05) 
+        if not usuario or not senha:
+            mostrar_alerta(self, QMessageBox.Icon.Warning, "Erro", "Preencha todos os campos")
+            return
 
-        self.app = app 
-        self.db = db 
-        
-        self.bntContinuar.clicked.connect(self.login) 
-        self.btnVerSenha.clicked.connect(self.toggle_senha) 
-        self.btnVerSenha.setText("🔒")  # Corrigido: Texto decodificado para emoji legível
-        self.senha_visivel = False 
-
-    def login(self): 
-        usuario = self.inputUsuario.text().strip() 
-        senha = self.InputSenha.text().strip() 
-        
-        # validação básica 
-        if not usuario or not senha: 
-            QMessageBox.warning(self, "Erro", "Preencha todos os campos") 
-            return 
-            
-        result = self.db.login(usuario, senha) 
-        if result: 
-            # salva usuário logado 
-            self.app.usuario_logado = result 
-            # manda pro sistema principal 
-            self.app.main_app.carregar_usuario(result) 
-            # troca tela 
-            self.app.setCurrentIndex(1) 
-            # limpa campos depois do login 
-            self.inputUsuario.clear() 
-            self.InputSenha.clear() 
-        else: 
-            QMessageBox.warning(self, "Erro", "Usuário ou senha inválidos") 
-
-    def toggle_senha(self): 
-        if self.senha_visivel: 
-            self.InputSenha.setEchoMode(self.InputSenha.EchoMode.Password) 
-            self.btnVerSenha.setText("🔒")  # Corrigido: Texto decodificado
-        else: 
-            self.InputSenha.setEchoMode(self.InputSenha.EchoMode.Normal) 
-            self.btnVerSenha.setText("🔓")  # Corrigido: Texto decodificado
-        self.senha_visivel = not self.senha_visivel
+        resultado = self.db.login(usuario, senha)
+        if resultado:
+            self.app.usuario_logado = resultado
+            self.app.main_app.carregar_usuario(resultado)
+            self.app.setCurrentIndex(1)
+            self.ui.inputUsuario.clear()
+            self.ui.inputSenha.clear()
+        else:
+            mostrar_alerta(self, QMessageBox.Icon.Warning, "Erro", "Usuário ou senha inválidos")

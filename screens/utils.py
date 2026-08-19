@@ -1,9 +1,10 @@
 import os
 import re
+import sys
 import unicodedata
 from datetime import datetime
 
-from PyQt6.QtWidgets import QGraphicsDropShadowEffect
+from PyQt6.QtWidgets import QGraphicsDropShadowEffect, QMessageBox
 from PyQt6.QtGui import QColor
 
 from reportlab.lib.pagesizes import A4
@@ -11,6 +12,8 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import cm
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+
+from screens.theme import CORES
 
 
 # ---------- Visual: sombra suave para dar profundidade calma aos cards ----------
@@ -24,6 +27,32 @@ def aplicar_sombra(widget, blur=28, y_offset=6, alpha=28):
     sombra.setYOffset(y_offset)
     sombra.setColor(QColor(46, 58, 70, alpha))  # tom neutro azulado, bem translúcido
     widget.setGraphicsEffect(sombra)
+
+
+# ---------- Alertas: um único popup padronizado para todo o sistema ----------
+
+def mostrar_alerta(parent, tipo, titulo, texto, botoes=QMessageBox.StandardButton.Ok):
+    """Exibe um QMessageBox com o visual padrão do SISPE (fundo branco, texto
+    escuro, botão azul), puxando as cores de screens/theme.py.
+
+    Fonte única para todos os popups do sistema — antes cada tela (psicólogo,
+    admin, editar_aluno, histórico...) tinha sua própria cópia colada deste
+    mesmo código; agora todas chamam esta função."""
+    msg = QMessageBox(parent)
+    msg.setIcon(tipo)
+    msg.setWindowTitle(titulo)
+    msg.setText(texto)
+    msg.setStandardButtons(botoes)
+    msg.setStyleSheet(f"""
+        QMessageBox {{ background-color: {CORES['creme']}; }}
+        QLabel {{ color: {CORES['texto']}; background-color: transparent; font-size: 14px; }}
+        QPushButton {{
+            background-color: {CORES['azul']}; color: white; border: none;
+            border-radius: 6px; padding: 6px 16px; min-width: 75px; font-weight: 600;
+        }}
+        QPushButton:hover {{ background-color: {CORES['azul_escuro']}; }}
+    """)
+    return msg.exec()
 
 
 # ---------- Gravidade: mantém consistência entre telas e banco de dados ----------
@@ -141,3 +170,8 @@ def gerar_pdf_relatorio(aluno, texto_relatorio, psicologo_username=None, data_ho
 
     doc.build(story)
     return caminho
+def resolver_caminho(caminho_relativo):
+    """Retorna o caminho absoluto para o arquivo, funcionando em modo de desenvolvimento ou no .exe"""
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, caminho_relativo)
+    return os.path.join(os.path.abspath("."), caminho_relativo)

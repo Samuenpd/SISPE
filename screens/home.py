@@ -1,68 +1,101 @@
-from PyQt6 import uic 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QScrollArea 
-from screens.utils import aplicar_sombra 
+"""
+screens/home.py
+================
+Lógica da tela inicial (dashboard) do SISPE.
 
-class HomeScreen(QWidget): 
-    def __init__(self, db): 
-        super().__init__() 
-        uic.loadUi("uis/home.ui", self) 
-        self.db = db 
+Este arquivo NÃO constrói nenhum widget diretamente — toda a interface visual
+vive em uis/home_ui.py (classe Ui_HomeScreen). Aqui só ficam: instanciar
+a UI, decidir quais cards de estatística aparecem conforme o tipo de usuário
+logado, e falar com o banco (database.py).
 
-        # Sombra suave nos cards (profundidade calma, sem exagero) 
-        for card in (self.frameSaudacao, self.frameSobre, self.frameEquipe, 
-                     self.frameObjetivos, self.frameTeoria, self.frameODS, 
-                     self.frameStatAlunos, self.frameStatRelatorios, 
-                     self.frameStatPais, self.frameStatUrgentes): 
-            aplicar_sombra(card) 
+Regra de negócio dos cards de estatística:
+    - admin:      vê os 4 números globais da escola inteira.
+    - psicologo:  vê só os números que pertencem a ele (relatórios que ele
+                  escreveu, compromissos que ele agendou).
+    - qualquer outro tipo (ex: pai) ou ninguém logado: nenhum card aparece.
+"""
 
-        # Criamos um container normal para o conteúdo rolável
-        self.conteudo = QWidget() 
-        self.conteudo.setLayout(self.mainLayout) 
-        
-        # Garante total transparência para herdar o SVG da janela principal
-        self.conteudo.setStyleSheet("background: transparent;") 
+from PyQt6.QtWidgets import QWidget
 
-        # Configuração da Scroll Area
-        self.scrollArea = QScrollArea() 
-        self.scrollArea.setWidget(self.conteudo) 
-        self.scrollArea.setWidgetResizable(True) 
-        self.scrollArea.setFrameShape(QScrollArea.Shape.NoFrame) 
-        
-        # Transparente para o fundo decorativo da MainApp aparecer por baixo
-        self.scrollArea.setStyleSheet("background: transparent;") 
-        self.scrollArea.viewport().setStyleSheet("background: transparent;") 
+from uis.home_ui import Ui_HomeScreen
+from screens.theme import CORES
 
-        # Layout externo da página que segura a barra de rolagem
-        layout_externo = QVBoxLayout(self) 
-        layout_externo.setContentsMargins(0, 0, 0, 0) 
-        layout_externo.addWidget(self.scrollArea) 
 
-        self.atualizar_dashboard() 
+class HomeScreen(QWidget):
+    def __init__(self, db):
+        super().__init__()
+        self.db = db
 
-    def atualizar(self, usuario=None): 
-        """Atualiza a saudação personalizada (comportamento original, inalterado).""" 
-        if usuario: 
-            tipo = usuario['tipo'].capitalize() 
-            self.labelMensagem.setText(f"Bem-vindo(a), {tipo}!") 
-        self.atualizar_dashboard() 
+        self.ui = Ui_HomeScreen()
+        self.ui.setupUi(self)
 
-    def atualizar_dashboard(self): 
-        """Preenche os cards de estatísticas da tela inicial com números reais.""" 
-        cursor = self.db.conn.cursor() 
-        
-        cursor.execute("SELECT COUNT(*) FROM alunos") 
-        total_alunos = cursor.fetchone()[0] 
-        
-        cursor.execute("SELECT COUNT(*) FROM relatorios") 
-        total_relatorios = cursor.fetchone()[0] 
-        
-        cursor.execute("SELECT COUNT(DISTINCT pai_id) FROM relacao_pai_aluno") 
-        total_pais = cursor.fetchone()[0] 
-        
-        cursor.execute("SELECT COUNT(*) FROM alunos WHERE gravidade='grave'") 
-        total_urgentes = cursor.fetchone()[0] 
+        # Sem usuário logado ainda (ex: primeira montagem da tela) -> sem cards
+        self.ui.containerEstatisticas.setVisible(False)
 
-        self.labelValorAlunos.setText(str(total_alunos)) 
-        self.labelValorRelatorios.setText(str(total_relatorios)) 
-        self.labelValorPais.setText(str(total_pais)) 
-        self.labelValorUrgentes.setText(str(total_urgentes))
+    # ------------------------------------------------------------------ #
+    # API pública — chamada por main_app_qt.py
+    # ------------------------------------------------------------------ #
+    def atualizar(self, usuario=None):
+        """Atualiza a saudação personalizada e remonta os cards de
+        estatística de acordo com o tipo do usuário logado."""
+        if usuario:
+            tipo = usuario["tipo"].capitalize()
+            self.ui.labelMensagem.setText(f"Bem-vindo(a), {tipo}!")
+        else:
+            self.ui.labelMensagem.setText("Bem-vindo(a) ao SISPE")
+
+        self._montar_estatisticas_para(usuario)
+
+    def atualizar_dashboard(self, usuario=None):
+        """Mantido por compatibilidade com chamadas antigas — delega para
+        _montar_estatisticas_para(). Prefira usar atualizar(usuario)."""
+        self._montar_estatisticas_para(usuario)
+
+    # ------------------------------------------------------------------ #
+    def _montar_estatisticas_para(self, usuario):
+        self.ui.limpar_estatisticas()
+
+        tipo = usuario["tipo"] if usuario else None
+
+        if tipo == "admin":
+            self._montar_estatisticas_admin()
+        elif tipo == "psicologo":
+            self._montar_estatisticas_psicologo(usuario["id"])
+        else:
+            # pai, ou ninguém logado -> nenhum card de estatística
+            self.ui.containerEstatisticas.setVisible(False)
+            return
+
+        self.ui.containerEstatisticas.setVisible(True)
+
+    def _montar_estatisticas_admin(self):
+        """Painel global da escola inteira — só o admin vê isto."""
+        stats = self.db.obter_estatisticas_dashboard()
+
+        self.ui.criar_card_estatistica(
+            "🎓", CORES["azul_escuro"], "Total de alunos"
+        ).definir_valor(stats["alunos"])
+
+        self.ui.criar_card_estatistica(
+            "📝", CORES["sucesso"], "Relatórios feitos"
+        ).definir_valor(stats["relatorios"])
+
+        self.ui.criar_card_estatistica(
+            "👨‍👩‍👧", CORES["azul"], "Pais vinculados"
+        ).definir_valor(stats["pais"])
+
+        self.ui.criar_card_estatistica(
+            "⚠️", CORES["alerta"], "Casos urgentes"
+        ).definir_valor(stats["urgentes"])
+
+    def _montar_estatisticas_psicologo(self, psicologo_id):
+        """Só os números que pertencem a este psicólogo especificamente."""
+        stats = self.db.obter_estatisticas_psicologo(psicologo_id)
+
+        self.ui.criar_card_estatistica(
+            "📝", CORES["sucesso"], "Relatórios feitos por você"
+        ).definir_valor(stats["relatorios"])
+
+        self.ui.criar_card_estatistica(
+            "🗓️", CORES["azul"], "Compromissos agendados"
+        ).definir_valor(stats["compromissos"])
