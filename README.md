@@ -178,11 +178,14 @@ pyinstaller main.spec
 ## 👥 Equipe de desenvolvimento
 
 - Andressa Alves Pereira
+- Byanca Santos Mello
 - Erick Lima Santos
 - Iashyla Campos de Jesus
 - Gustavo Cardoso Badiale
 - João Vitor Lino da Cruz
+- Karen Brito Gatto
 - Samuel de Lima Milare
+  
 
 **Docente orientador:** Filipe Sara Nogueira Pann
 **Guarulhos, 2025**
